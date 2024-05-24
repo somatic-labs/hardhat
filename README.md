@@ -13,5 +13,10 @@ Specificially this exploits:
 * banana king
 * p2p-storms
 
+## Bonus content
+
+* All of my emails with the interchain foundation
+* reports to the interchain foundation about this issue dating back to 2021
+
 
 
