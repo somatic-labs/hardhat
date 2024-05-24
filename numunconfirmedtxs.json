@@ -1,0 +1,10 @@
+{
+  "jsonrpc": "2.0",
+  "id": -1,
+  "result": {
+    "n_txs": "4053",
+    "total": "4053",
+    "total_bytes": "771399384",
+    "txs": null
+  }
+}
