@@ -71,7 +71,7 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 		token,
 		address,
 		"celestia13ln6j9u70p6r28n5zdq9a7kj98h5hjk2dtrzk7",
-		clienttypes.NewHeight(0, 1518197), // Adjusted timeout height
+		clienttypes.NewHeight(0, 21000000), // Adjusted timeout height
 		uint64(0),
 		memo,
 	)
@@ -84,17 +84,17 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 
 	// Estimate gas limit based on transaction size
 	txSize := msg.Size()
-	gasLimit := uint64((txSize * 10) + 100000) // 10 gas per byte + base gas
+	gasLimit := uint64((txSize * config.Bytes) + config.BaseGas) // 10 gas per byte + base gas
 	txBuilder.SetGasLimit(gasLimit)
 
 	// Calculate fee based on gas limit and a fixed gas price
-	gasPrice := sdk.NewDecCoinFromDec(config.Denom, sdk.NewDecWithPrec(17, 3)) // 0.1 token per gas unit
+	gasPrice := sdk.NewDecCoinFromDec(config.Denom, sdk.NewDecWithPrec(1, int64(config.Gas.Low))) // 0.1 token per gas unit
 	feeAmount := gasPrice.Amount.MulInt64(int64(gasLimit)).RoundInt()
 	feecoin := sdk.NewCoin(config.Denom, feeAmount)
 	txBuilder.SetFeeAmount(sdk.NewCoins(feecoin))
 
 	txBuilder.SetMemo("failure isn't fraud2")
-	txBuilder.SetTimeoutHeight(10546736)
+	txBuilder.SetTimeoutHeight(0)
 
 	// First round: we gather all the signer infos. We use the "set empty
 	// signature" hack to do that.

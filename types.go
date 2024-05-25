@@ -118,6 +118,8 @@ type Config struct {
 	Chain   string `toml:"chain"`
 	Channel string `toml:"channel"`
 	Prefix  string `toml:"prefix"`
+	Bytes   int    `toml:"gas_per_byte"`
+	BaseGas int    `toml:"base_gas"`
 	Denom   string `toml:"denom"`
 	Gas     struct {
 		Zero   float64 `toml:"zero"`

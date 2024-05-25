@@ -1,4 +1,4 @@
-module github.com/notional-labs/spammy/spammy-go
+module github.com/somatic-labs/hardhat
 
 go 1.22.3
 
