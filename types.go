@@ -119,6 +119,7 @@ type Config struct {
 	Channel string `toml:"channel"`
 	Prefix  string `toml:"prefix"`
 	Bytes   int    `toml:"gas_per_byte"`
+	IBCMemo string `toml:"ibc_memo"`
 	BaseGas int    `toml:"base_gas"`
 	Denom   string `toml:"denom"`
 	Gas     struct {

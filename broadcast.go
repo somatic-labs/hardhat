@@ -172,7 +172,7 @@ func BroadcastTransaction(txBytes []byte, rpcEndpoint string) (*coretypes.Result
 	return res, nil
 }
 
-func generateRandomString() (string, error) {
+func generateRandomString(config Config) (string, error) {
 	src := rand.NewSource(time.Now().UnixNano())
 	r := rand.New(src)
 
