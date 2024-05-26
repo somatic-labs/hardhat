@@ -115,14 +115,17 @@ type Fee struct {
 }
 
 type Config struct {
-	Chain   string `toml:"chain"`
-	Channel string `toml:"channel"`
-	Prefix  string `toml:"prefix"`
-	Bytes   int    `toml:"gas_per_byte"`
-	IBCMemo string `toml:"ibc_memo"`
-	BaseGas int    `toml:"base_gas"`
-	Denom   string `toml:"denom"`
-	Gas     struct {
+	Chain         string `toml:"chain"`
+	Channel       string `toml:"channel"`
+	Prefix        string `toml:"prefix"`
+	Bytes         int    `toml:"gas_per_byte"`
+	Memo          string `toml:"memo"`
+	IBCMemo       string `toml:"ibc_memo"`
+	IBCMemoRepeat int    `toml:"ibc_memo_repeat"`
+	IBCChannel    string `toml:"ibc_channel"`
+	BaseGas       int    `toml:"base_gas"`
+	Denom         string `toml:"denom"`
+	Gas           struct {
 		Zero   float64 `toml:"zero"`
 		Low    float64 `toml:"low"`
 		Medium float64 `toml:"medium"`

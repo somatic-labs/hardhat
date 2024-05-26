@@ -1,0 +1,34 @@
+chain = "comdex"
+channel = "channel-0"
+denom = "ucmdx"
+prefix = "comdex"
+gas_per_byte = 10
+base_gas = 100000
+ibc_memo = "Informal and Strangelove say it's not a security issue"
+ibc_memo_repeat = 100
+rand_min = 300000
+rand_max = 400000
+memo = "Informal and Strangelove say it's not a security issue"
+
+[gas]
+zero = 0
+low = 0
+medium = 0.25
+high = 0.04
+
+
+[nodes]
+rpc  = [
+    "http://65.108.101.19:24557",
+    "http://142.132.253.13:51657",
+    "http://188.214.134.118:26657",
+    "http://62.171.182.242:56657"
+
+
+
+]
+
+api = "https://comdex-api.lavenderfive.com:443"
+
+
+
