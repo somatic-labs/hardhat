@@ -12,6 +12,16 @@ go install ./...
 
 Pre-baked mainnet configurations are in the configurations folder.  You need a file named `seedphrase`.  You may or may not want to set up your own node with a 10 GB mempool that accepts 50,000 transactions.  You put RPC urls in nodes.toml, and configure the other settings in there.  Then you just run `hardhat` in the same folder as the nodes.toml file and the `seedphrase` file.
 
+## You set off my pagerduty
+
+Possibly.  But really, I didn't set off your pagerduty.  Lack of diligence and attending to security reports, over the course of years, set off your pagerduty.  Individuals should not be able to stop or slow blockchains.
+
+Tweets should not be able to harm blockchains.
+
+Strong chain needs strong testing and strong tweet.
+
+Weak chain die.
+
 ## Context
 
 I've known that the spammy attack can be enhanced by maybe 100x.  This does that, and it also works with https://github.com/notional-labs/rpc-crawler.
