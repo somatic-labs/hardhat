@@ -82,7 +82,7 @@ func main() {
 						mu.Lock()
 						failedTxns++
 						mu.Unlock()
-						fmt.Printf("%s Node: %s, Error: %v\n", time.Now().Format("15:04:05"), nodeURL, err)
+
 					} else {
 						mu.Lock()
 						successfulTxns++
@@ -122,8 +122,10 @@ func main() {
 	}
 
 	// Send transactions to the worker goroutines
-	for i := 0; i < len(successfulNodes)*BatchSize; i++ {
-		transactionCh <- fmt.Sprintf("Transaction %d", i)
+	for i := 0; i < BatchSize; i++ {
+		for j := 0; j < len(successfulNodes); j++ {
+			transactionCh <- fmt.Sprintf("Transaction %d", i)
+		}
 	}
 
 	close(transactionCh) // Close the transaction channel when all transactions are sent
