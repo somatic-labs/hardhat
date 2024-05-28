@@ -1,4 +1,6 @@
-# spammy-go
+# hardhat
+
+(named after https://x.com/hardhatchad )
 
 ## Context
 
