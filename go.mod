@@ -149,36 +149,32 @@ require (
 )
 
 replace (
-	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
+	// use Notional's fork of wasmd with sdk 0.46
+	github.com/CosmWasm/wasmd => github.com/notional-labs/wasmd v0.30.0-sdk469.4
 
-	github.com/confio/ics23/go => github.com/agoric-labs/cosmos-sdk/ics23/go v0.8.0-alpha.agoric.1
-
-	// https://pkg.go.dev/vuln/GO-2023-2409
-	github.com/dvsekhvalnov/jose2go => github.com/dvsekhvalnov/jose2go v1.5.1-0.20231206184617-48ba0b76bc88
-
-	// Fix upstream GHSA-3vp4-m3rf-835h vulnerability.
-	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.0
-
+	// use cosmos flavored gogo/protobuf
+	// https://github.com/cosmos/cosmos-sdk/issues/8469
+	//
+	// The original protobuf protocol has the drawback that it is not bijective:
+	// the same data can have multiple valid binary representations, and there is
+	// no guarantee on determinism.
+	//
+	// Cosmos implements its own protobuf protocol in ADR-027:
+	// https://github.com/cosmos/cosmos-sdk/blob/main/docs/architecture/adr-027-deterministic-protobuf-serialization.md
+	//
+	// Another discussion why not to use protobuf for blockchain storage:
+	// https://github.com/near/borsh/discussions/110
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 
-	// https://pkg.go.dev/vuln/GO-2023-1578
-	github.com/hashicorp/go-getter => github.com/hashicorp/go-getter v1.7.0
-
-	// replace broken goleveldb.
+	// replace broken goleveldb
+	//
+	// this is recommended in the barberry release note:
+	// https://github.com/cosmos/cosmos-sdk/releases
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
-)
-
-// Agoric-specific replacements:
-replace (
-	// Pick up an IAVL race fix.
-	github.com/cosmos/iavl => github.com/cosmos/iavl v0.19.7
 
 	// use cometbft
-	// Use our fork at least until post-v0.34.14 is released with
-	// https://github.com/tendermint/tendermint/issue/6899 resolved.
-	github.com/tendermint/tendermint => github.com/agoric-labs/cometbft v0.34.30-alpha.agoric.1
-
-// For testing against a local cosmos-sdk or cometbft
-// github.com/cosmos/cosmos-sdk => ../../../forks/cosmos-sdk
-// github.com/tendermint/tendermint => ../../../forks/cometbft
+	//
+	// this is recommended in the barberry release note:
+	// https://github.com/cosmos/cosmos-sdk/releases
+	github.com/tendermint/tendermint => github.com/cometbft/cometbft v0.34.28
 )
