@@ -76,7 +76,7 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 		token,
 		address,
 		ibcaddr,
-		clienttypes.NewHeight(0, 21000000), // Adjusted timeout height
+		clienttypes.NewHeight(uint64(config.RevisionNumber), uint64(config.TimeoutHeight)), // Adjusted timeout height
 		uint64(0),
 		memo,
 	)
@@ -93,12 +93,12 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 	txBuilder.SetGasLimit(gasLimit)
 
 	// Calculate fee based on gas limit and a fixed gas price
-	gasPrice := sdk.NewDecCoinFromDec(config.Denom, sdk.NewDecWithPrec(5, 4)) // 0.1 token per gas unit
+	gasPrice := sdk.NewDecCoinFromDec(config.Denom, sdk.NewDecWithPrec(51, 5)) // 0.00051 token per gas unit
 	feeAmount := gasPrice.Amount.MulInt64(int64(gasLimit)).RoundInt()
 	feecoin := sdk.NewCoin(config.Denom, feeAmount)
 	txBuilder.SetFeeAmount(sdk.NewCoins(feecoin))
 
-	txBuilder.SetMemo("failure isn't fraud2")
+	txBuilder.SetMemo(config.Memo)
 	txBuilder.SetTimeoutHeight(0)
 
 	// First round: we gather all the signer infos. We use the "set empty
@@ -181,7 +181,7 @@ func generateRandomString(config Config) (string, error) {
 	src := rand.NewSource(time.Now().UnixNano())
 	r := rand.New(src)
 
-	sizeB := r.Intn(400000-300000+1) + 300000 // Generate random size between 300000 and 400000 bytes
+	sizeB := r.Intn(config.RandMax-config.RandMin+1) + config.RandMin // Generate random size between 300000 and 400000 bytes
 
 	// Calculate the number of bytes to generate (2 characters per byte in hex encoding)
 	nBytes := sizeB / 2

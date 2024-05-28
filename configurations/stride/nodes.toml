@@ -3,11 +3,14 @@ channel = "channel-0"
 denom = "ustrd"
 prefix = "stride"
 gas_per_byte = 20
-base_gas = 100000
-ibc_memo = "Informal and Strangelove say it's not a security issue"
-ibc_memo_repeat = 100
-rand_min = 300000
-rand_max = 400000
+base_gas = 110000
+ibc_memo = "This should not cause any problems"
+memo = "Just checking on this"
+ibc_memo_repeat = 10
+rand_min = 10000
+rand_max = 20000
+revision_number = 4
+timeout_height = 20720608
 
 [gas]
 zero = 0
@@ -19,7 +22,6 @@ high = 0.04
 [nodes]
 rpc  = [
     "http://103.219.170.123:26657",
-    "http://168.119.150.45:26657",
     "http://159.89.7.173:26657",
 ]
 
