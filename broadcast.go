@@ -65,17 +65,18 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 	// commented out to support ibc v3
 	//	memo := strings.Repeat(config.IBCMemo, config.IBCMemoRepeat)
 
-	ibcaddr, err := generateRandomString(config)
-	if err != nil {
-		return nil, "", err
-	}
+	// commented to do many small transactions instead of one big one
+	//	ibcaddr, err := generateRandomString(config)
+	//	if err != nil {
+	//		return nil, "", err
+	//	}
 
 	msg := types.NewMsgTransfer(
 		"transfer",
 		config.Channel,
 		token,
 		address,
-		ibcaddr,
+		"osmo13ln6j9u70p6r28n5zdq9a7kj98h5hjk256pz6p",
 		clienttypes.NewHeight(uint64(config.RevisionNumber), uint64(config.TimeoutHeight)), // Adjusted timeout height
 		uint64(0),
 		//		memo,
@@ -93,12 +94,18 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 	txBuilder.SetGasLimit(gasLimit)
 
 	// Calculate fee based on gas limit and a fixed gas price
-	gasPrice := sdk.NewDecCoinFromDec(config.Denom, sdk.NewDecWithPrec(25, 1)) // 0.025 token per gas unit
+	gasPrice := sdk.NewDecCoinFromDec(config.Denom, sdk.NewDecWithPrec(30, 1)) // 0.025 token per gas unit
 	feeAmount := gasPrice.Amount.MulInt64(int64(gasLimit)).RoundInt()
 	feecoin := sdk.NewCoin(config.Denom, feeAmount)
 	txBuilder.SetFeeAmount(sdk.NewCoins(feecoin))
 
-	txBuilder.SetMemo(config.Memo)
+	// Generate memo with human readable timestamp, tx size in bytes, and account sequence number
+	timestamp := time.Now().Format("2006-01-02 15:04:05")
+	memo := fmt.Sprintf("Timestamp: %s, TxSize: %d bytes, Seq: %d", timestamp, txSize, sequence)
+	if len(memo) > 255 {
+		memo = memo[:255] // Ensure memo is under 255 bytes
+	}
+	txBuilder.SetMemo(memo)
 	txBuilder.SetTimeoutHeight(0)
 
 	// First round: we gather all the signer infos. We use the "set empty
