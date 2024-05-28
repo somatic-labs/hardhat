@@ -17,11 +17,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
-	"github.com/cosmos/ibc-go/v3/modules/apps/transfer"
-	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
-	ibc "github.com/cosmos/ibc-go/v3/modules/core"
-	clienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
-	"github.com/cosmos/ibc-go/v3/testing/simapp"
+	"github.com/cosmos/ibc-go/v4/modules/apps/transfer"
+	"github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
+	ibc "github.com/cosmos/ibc-go/v4/modules/core"
+	clienttypes "github.com/cosmos/ibc-go/v4/modules/core/02-client/types"
+	"github.com/cosmos/ibc-go/v4/testing/simapp"
 
 	cometrpc "github.com/tendermint/tendermint/rpc/client/http"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
@@ -63,10 +63,10 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 	token := sdk.NewCoin(config.Denom, sdk.NewInt(1))
 
 	// commented out to support ibc v3
-	//	memo := strings.Repeat(config.IBCMemo, config.IBCMemoRepeat)
+	// memo := strings.Repeat(config.IBCMemo, config.IBCMemoRepeat)
 
 	// commented to do many small transactions instead of one big one
-	//	ibcaddr, err := generateRandomString(config)
+	//ibcaddr, err := generateRandomString(config)
 	//	if err != nil {
 	//		return nil, "", err
 	//	}

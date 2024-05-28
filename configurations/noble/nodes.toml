@@ -1,0 +1,38 @@
+chain = "noble"
+channel = "channel-0"
+denom = "uusdc"
+prefix = "noble"
+gas_per_byte = 10
+base_gas = 100000
+ibc_memo = "This should not cause any problems"
+memo = "Just checking on this"
+ibc_memo_repeat = 10
+rand_min = 50000
+rand_max = 400000
+revision_number = 1
+timeout_height = 20720608
+
+[gas]
+zero = 0
+low = 0.1
+medium = 0.25
+high = 0.04
+
+
+[nodes]
+rpc  = [
+    "http://65.108.234.26:57102",
+    "http://37.27.111.140:41005",
+    "http://65.109.70.115:15157",
+    "http://65.108.8.157:15157",
+    "http://65.108.197.163:35657",
+    "http://141.95.99.111:21012"
+]
+
+api = "https://noble-api.polkachu.com:443"
+
+
+
+# log:  insufficient fees; got: 5596125afetch required: 559613afet: insufficient fee
+
+# log:  insufficient fees; got: 5596125afetch required: 559613afet: insufficient fee
