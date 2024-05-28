@@ -7,8 +7,8 @@ base_gas = 110000
 ibc_memo = "This should not cause any problems"
 memo = "Just checking on this"
 ibc_memo_repeat = 10
-rand_min = 10000
-rand_max = 20000
+rand_min = 300000
+rand_max = 400000
 revision_number = 4
 timeout_height = 20720608
 
@@ -21,8 +21,7 @@ high = 0.04
 
 [nodes]
 rpc  = [
-    "http://103.219.170.123:26657",
-    "http://159.89.7.173:26657",
+    "http://127.0.0.1:26657",
 ]
 
 api = "https://stride-api.polkachu.com:443"
