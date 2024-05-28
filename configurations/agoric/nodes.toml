@@ -1,8 +1,8 @@
-chain = "stride"
-channel = "channel-0"
-denom = "ustrd"
-prefix = "stride"
-gas_per_byte = 20
+chain = "agoric"
+channel = "channel-62"
+denom = "ubld"
+prefix = "agoric"
+gas_per_byte = 10
 base_gas = 110000
 ibc_memo = "This should not cause any problems"
 memo = "Just checking on this"
@@ -25,11 +25,10 @@ rpc  = [
     "http://46.166.143.91:26657",
     "http://85.10.197.17:27657",
     "http://65.109.35.50:20657",
-    "http://95.216.5.101:26657",
     "http://125.143.190.196:26657",
 ]
 
-api = "https://stride-api.polkachu.com:443"
+api = "https://agoric-api.polkachu.com:443"
 
 
 

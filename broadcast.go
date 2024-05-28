@@ -168,6 +168,7 @@ func BroadcastTransaction(txBytes []byte, rpcEndpoint string) (*coretypes.Result
 		return nil, err
 	}
 
+	fmt.Println("Node: ", rpcEndpoint)
 	fmt.Println("other: ", res.Data)
 	fmt.Println("log: ", res.Log)
 	fmt.Println("code: ", res.Code)
