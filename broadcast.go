@@ -7,7 +7,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -18,15 +17,15 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer"
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	ibc "github.com/cosmos/ibc-go/v7/modules/core"
-	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	"github.com/cosmos/ibc-go/v7/testing/simapp"
+	"github.com/cosmos/ibc-go/v3/modules/apps/transfer"
+	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
+	ibc "github.com/cosmos/ibc-go/v3/modules/core"
+	clienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
+	"github.com/cosmos/ibc-go/v3/testing/simapp"
 
-	cometrpc "github.com/cometbft/cometbft/rpc/client/http"
-	coretypes "github.com/cometbft/cometbft/rpc/core/types"
-	tmtypes "github.com/cometbft/cometbft/types"
+	cometrpc "github.com/tendermint/tendermint/rpc/client/http"
+	coretypes "github.com/tendermint/tendermint/rpc/core/types"
+	tmtypes "github.com/tendermint/tendermint/types"
 )
 
 var client = &http.Client{
@@ -63,7 +62,8 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 	//	receiver, _ := generateRandomString()
 	token := sdk.NewCoin(config.Denom, sdk.NewInt(1))
 
-	memo := strings.Repeat(config.IBCMemo, config.IBCMemoRepeat)
+	// commented out to support ibc v3
+	//	memo := strings.Repeat(config.IBCMemo, config.IBCMemoRepeat)
 
 	ibcaddr, err := generateRandomString(config)
 	if err != nil {
@@ -78,7 +78,7 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 		ibcaddr,
 		clienttypes.NewHeight(uint64(config.RevisionNumber), uint64(config.TimeoutHeight)), // Adjusted timeout height
 		uint64(0),
-		memo,
+		//		memo,
 	)
 
 	// set messages
