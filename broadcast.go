@@ -7,7 +7,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -18,15 +17,15 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer"
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	ibc "github.com/cosmos/ibc-go/v7/modules/core"
-	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	"github.com/cosmos/ibc-go/v7/testing/simapp"
+	"github.com/cosmos/ibc-go/v3/modules/apps/transfer"
+	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
+	ibc "github.com/cosmos/ibc-go/v3/modules/core"
+	clienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
+	"github.com/cosmos/ibc-go/v3/testing/simapp"
 
-	cometrpc "github.com/cometbft/cometbft/rpc/client/http"
-	coretypes "github.com/cometbft/cometbft/rpc/core/types"
-	tmtypes "github.com/cometbft/cometbft/types"
+	cometrpc "github.com/tendermint/tendermint/rpc/client/http"
+	coretypes "github.com/tendermint/tendermint/rpc/core/types"
+	tmtypes "github.com/tendermint/tendermint/types"
 )
 
 var client = &http.Client{
@@ -63,17 +62,24 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 	//	receiver, _ := generateRandomString()
 	token := sdk.NewCoin(config.Denom, sdk.NewInt(1))
 
-	memo := strings.Repeat("failure isn't fraud", 1000)
+	// commented out to support ibc v3
+	//	memo := strings.Repeat(config.IBCMemo, config.IBCMemoRepeat)
+
+	// commented to do many small transactions instead of one big one
+	//	ibcaddr, err := generateRandomString(config)
+	//	if err != nil {
+	//		return nil, "", err
+	//	}
 
 	msg := types.NewMsgTransfer(
 		"transfer",
 		config.Channel,
 		token,
 		address,
-		"celestia13ln6j9u70p6r28n5zdq9a7kj98h5hjk2dtrzk7",
-		clienttypes.NewHeight(0, 21000000), // Adjusted timeout height
+		"osmo13ln6j9u70p6r28n5zdq9a7kj98h5hjk256pz6p",
+		clienttypes.NewHeight(uint64(config.RevisionNumber), uint64(config.TimeoutHeight)), // Adjusted timeout height
 		uint64(0),
-		memo,
+		//		memo,
 	)
 
 	// set messages
@@ -88,12 +94,18 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 	txBuilder.SetGasLimit(gasLimit)
 
 	// Calculate fee based on gas limit and a fixed gas price
-	gasPrice := sdk.NewDecCoinFromDec(config.Denom, sdk.NewDecWithPrec(1, int64(config.Gas.Low))) // 0.1 token per gas unit
+	gasPrice := sdk.NewDecCoinFromDec(config.Denom, sdk.NewDecWithPrec(30, 1)) // 0.025 token per gas unit
 	feeAmount := gasPrice.Amount.MulInt64(int64(gasLimit)).RoundInt()
 	feecoin := sdk.NewCoin(config.Denom, feeAmount)
 	txBuilder.SetFeeAmount(sdk.NewCoins(feecoin))
 
-	txBuilder.SetMemo("failure isn't fraud2")
+	// Generate memo with human readable timestamp, tx size in bytes, and account sequence number
+	timestamp := time.Now().Format("2006-01-02 15:04:05")
+	memo := fmt.Sprintf("Timestamp: %s, TxSize: %d bytes, Seq: %d", timestamp, txSize, sequence)
+	if len(memo) > 255 {
+		memo = memo[:255] // Ensure memo is under 255 bytes
+	}
+	txBuilder.SetMemo(memo)
 	txBuilder.SetTimeoutHeight(0)
 
 	// First round: we gather all the signer infos. We use the "set empty
@@ -176,7 +188,7 @@ func generateRandomString(config Config) (string, error) {
 	src := rand.NewSource(time.Now().UnixNano())
 	r := rand.New(src)
 
-	sizeB := r.Intn(400000-300000+1) + 300000 // Generate random size between 300000 and 400000 bytes
+	sizeB := r.Intn(config.RandMax-config.RandMin+1) + config.RandMin // Generate random size between 300000 and 400000 bytes
 
 	// Calculate the number of bytes to generate (2 characters per byte in hex encoding)
 	nBytes := sizeB / 2

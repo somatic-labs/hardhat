@@ -4,7 +4,6 @@ denom = "udvpn"
 prefix = "sent"
 gas_per_byte = 150
 base_gas = 100000
-ibc-channel = "channel-0"
 ibc_memo = "Informal and Strangelove say it's not a security issue"
 rand_min = 300000
 rand_max = 400000
