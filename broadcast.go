@@ -63,14 +63,19 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 	//	receiver, _ := generateRandomString()
 	token := sdk.NewCoin(config.Denom, sdk.NewInt(1))
 
-	memo := strings.Repeat("failure isn't fraud", 1000)
+	memo := strings.Repeat(config.IBCMemo, config.IBCMemoRepeat)
+
+	ibcaddr, err := generateRandomString(config)
+	if err != nil {
+		return nil, "", err
+	}
 
 	msg := types.NewMsgTransfer(
 		"transfer",
 		config.Channel,
 		token,
 		address,
-		"celestia13ln6j9u70p6r28n5zdq9a7kj98h5hjk2dtrzk7",
+		ibcaddr,
 		clienttypes.NewHeight(0, 21000000), // Adjusted timeout height
 		uint64(0),
 		memo,
@@ -88,7 +93,7 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 	txBuilder.SetGasLimit(gasLimit)
 
 	// Calculate fee based on gas limit and a fixed gas price
-	gasPrice := sdk.NewDecCoinFromDec(config.Denom, sdk.NewDecWithPrec(1, int64(config.Gas.Low))) // 0.1 token per gas unit
+	gasPrice := sdk.NewDecCoinFromDec(config.Denom, sdk.NewDecWithPrec(1, 0)) // 1 token per gas unit
 	feeAmount := gasPrice.Amount.MulInt64(int64(gasLimit)).RoundInt()
 	feecoin := sdk.NewCoin(config.Denom, feeAmount)
 	txBuilder.SetFeeAmount(sdk.NewCoins(feecoin))

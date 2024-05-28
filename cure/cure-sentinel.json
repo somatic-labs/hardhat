@@ -1,0 +1,14 @@
+{
+    "title": "Reduce Maximum Block Size",
+    "description": "This Proposal reduces the maximum block size to reduce the potential impact of spam.  github.com/notional-labs/placid",
+    "changes": [
+        {
+            "subspace": "baseapp",
+            "key": "BlockParams",
+            "value": {
+                "max_bytes": "1048576"
+            }
+        }
+    ],
+    "deposit": "500000000000udvpn"
+}

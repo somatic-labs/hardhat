@@ -1,0 +1,32 @@
+chain = "iris"
+channel = "channel-0"
+denom = "uiris"
+prefix = "iaa"
+gas_per_byte = 10
+base_gas = 100000
+ibc_memo = "Informal and Strangelove say it's not a security issue"
+ibc_memo_repeat = 100
+rand_min = 300000
+rand_max = 400000
+
+[gas]
+zero = 0
+low = 0.001
+medium = 0.25
+high = 0.04
+
+
+[nodes]
+rpc  = [
+    "http://89.163.225.93:26657",
+    "http://135.181.113.227:1905",
+    "http://65.108.232.168:11657",
+    "http://46.38.232.86:30657",
+    "http://65.109.94.26:36609",
+
+]
+
+api = "https://api-irisnet-01.stakeflow.io:443"
+
+
+

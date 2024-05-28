@@ -1,0 +1,14 @@
+{
+    "title": "Reduce Maximum Block Size",
+    "description": "This Proposal reduces the maximum block size pursuant to: https://github.com/cometbft/cometbft/security/advisories/GHSA-hq58-p9mv-338c",
+    "changes": [
+        {
+            "subspace": "baseapp",
+            "key": "BlockParams",
+            "value": {
+                "max_bytes": "1048576"
+            }
+        }
+    ],
+    "deposit": "100000000uatom"
+}

@@ -1,0 +1,32 @@
+chain = "stargaze"
+channel = "channel-0"
+denom = "ustars"
+prefix = "stars"
+gas_per_byte = 10
+base_gas = 100000
+ibc_memo = "Informal and Strangelove say it's not a security issue"
+ibc_memo_repeat = 100
+rand_min = 300000
+rand_max = 400000
+
+[gas]
+zero = 0
+low = 0.001
+medium = 0.25
+high = 0.04
+
+
+[nodes]
+rpc  = [
+    "http://65.108.131.62:26657",
+    "http://65.109.104.74:26657",
+    "http://65.108.141.109:8657",
+    "http://65.21.134.243:26670",
+    "http://65.108.75.107:8657",
+
+]
+
+api = "https://rest.stargaze-apis.com:443"
+
+
+
