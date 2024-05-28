@@ -1,0 +1,31 @@
+chain = "fetch"
+channel = "channel-10"
+denom = "afet"
+prefix = "fetch"
+gas_per_byte = 20
+base_gas = 200000
+ibc_memo = "This should not cause any problems"
+memo = "Just checking on this"
+ibc_memo_repeat = 10
+rand_min = 50000
+rand_max = 100000
+revision_number = 4
+timeout_height = 20720608
+
+[gas]
+zero = 0
+low = 0.1
+medium = 0.25
+high = 0.04
+
+
+[nodes]
+rpc  = [
+    "http://127.0.0.1:26657",
+]
+
+api = "https://fetch-api.polkachu.com:443"
+
+
+
+# log:  insufficient fees; got: 5596125afetch required: 559613afet: insufficient fee

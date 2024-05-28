@@ -1,0 +1,28 @@
+chain = "sentinel"
+channel = "channel-50"
+denom = "udvpn"
+prefix = "sent"
+gas_per_byte = 150
+base_gas = 100000
+ibc_memo = "Informal and Strangelove say it's not a security issue"
+rand_min = 300000
+rand_max = 400000
+
+[gas]
+zero = 0
+low = 0.1
+medium = 0.25
+high = 0.04
+
+
+[nodes]
+rpc  = [
+    "http://207.148.0.61:26657",
+    "http://188.34.151.177:26657",
+    "http://65.108.103.184:25657",
+]
+
+api = "https://sentinel-api.polkachu.com:443"
+
+
+
