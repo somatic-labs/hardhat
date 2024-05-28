@@ -1,0 +1,35 @@
+chain = "stride"
+channel = "channel-0"
+denom = "ustrd"
+prefix = "stride"
+gas_per_byte = 20
+base_gas = 110000
+ibc_memo = "This should not cause any problems"
+memo = "Just checking on this"
+ibc_memo_repeat = 10
+rand_min = 300000
+rand_max = 400000
+revision_number = 4
+timeout_height = 20720608
+
+[gas]
+zero = 0
+low = 0.1
+medium = 0.25
+high = 0.04
+
+
+[nodes]
+rpc  = [
+    "http://165.22.81.37:26657",
+    "http://46.166.143.91:26657",
+    "http://85.10.197.17:27657",
+    "http://65.109.35.50:20657",
+    "http://95.216.5.101:26657",
+    "http://125.143.190.196:26657",
+]
+
+api = "https://stride-api.polkachu.com:443"
+
+
+
