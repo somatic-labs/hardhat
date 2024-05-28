@@ -1,4 +1,4 @@
-# spammy-go
+# hardhat
 
 ## How to Install
 
@@ -10,7 +10,7 @@ go install ./...
 
 ## How to use
 
-There is a `nodes.toml` file in the folder, it is currently configured for Sentinel.  This code supports SDK 47, but I have built sdk 50 and sdk 45 versions, you can [contact me](https://x.com/gadikian) by twitter DM and I can get you those, if you should need it.  
+Pre-baked mainnet configurations are in the configurations folder.  You need a file named `seedphrase`.  You may or may not want to set up your own node with a 10 GB mempool that accepts 50,000 transactions.  You put RPC urls in nodes.toml, and configure the other settings in there.  Then you just run `hardhat` in the same folder as the nodes.toml file and the `seedphrase` file.
 
 ## Context
 
