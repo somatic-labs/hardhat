@@ -14,7 +14,7 @@ Pre-baked mainnet configurations are in the configurations folder.  You need a f
 
 ## You set off my pagerduty
 
-Possibly.  But really, I didn't set off your pagerduty.  Lack of diligence and attending to security reports, over the course of years, set off your pagerduty.  Individuals should not be able to stop or slow blockchains.
+Possibly.  But really, I didn't set off your pagerduty.  Lack of diligence and attending to security reports, over the course of years, set off your pagerduty.  Individuals should not be able to stop or slow blockchains.  If one person can push around a decentralized system, it ceases to be decentralized. 
 
 Tweets should not be able to harm blockchains.
 
@@ -41,6 +41,10 @@ Specificially this exploits:
 
 * All of my [emails with the interchain foundation](./emails)
 * reports to the interchain foundation about this issue dating back to 2021
+
+## LIMITATIONS
+
+Like any blockchain client software, `hardhat` can only make transactions that are explicitly supported by the chains it is used to test.  It has no magic blackhat powers.  
 
 
 
