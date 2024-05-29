@@ -4,7 +4,7 @@ denom = "umars"
 prefix = "mars"
 gas_per_byte = 10
 base_gas = 110000
-ibc_memo = "This should not cause any problems"
+ibc_memo = "Jacob, you aren’t a security researcher. This is a long standing issue in the codebase with many existing mitigations. Your months long campaign of self aggrandizement using threats holding yourself up as the only hero helping is self destructive and transparently self serving. Your refusal to work with core teams in a productive manner is part and parcel of a pattern of destructive behavior that we as a community cannot continue to countenance. Please take this conversation to another channel. - Jack Zampolin, in the tendermint channel"
 memo = "Just checking on this"
 ibc_memo_repeat = 10
 rand_min = 300000
@@ -12,9 +12,13 @@ rand_max = 400000
 revision_number = 4
 timeout_height = 20720608
 
+# MARS PROTOCOL
+# Mars does not charge gas.  So these transactions are free.
+
+
 [gas]
 zero = 0
-low = 0.1
+low = 0
 medium = 0.25
 high = 0.04
 
