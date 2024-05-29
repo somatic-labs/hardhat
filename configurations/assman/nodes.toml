@@ -1,0 +1,35 @@
+chain = "asset mantle"
+channel = "channel-0"
+denom = "umntl"
+prefix = "mantle"
+gas_per_byte = 10
+base_gas = 110000
+ibc_memo = "This should not cause any problems"
+memo = "Just checking on this"
+ibc_memo_repeat = 10
+rand_min = 10000
+rand_max = 20000
+revision_number = 4
+timeout_height = 20720608
+
+[gas]
+zero = 0
+low = 0.01
+medium = 0.025
+high = 0.04
+
+
+[nodes]
+rpc  = [
+    "http://93.115.25.178:2031",
+    "http://51.161.87.146:27657",
+    "http://62.171.182.242:23657",
+    "http://144.91.78.94:26667",
+    "http://168.119.89.31:26157",
+
+]
+
+api = "https://assetmantle-api.polkachu.com:443"
+
+
+
