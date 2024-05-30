@@ -11,9 +11,9 @@ rand_max = 400000
 
 [gas]
 zero = 0
-low = 1
-medium = 2
-high = 3
+low = 0.001
+medium = 0.25
+high = 0.04
 
 
 [nodes]

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net"
@@ -12,7 +11,6 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func getInitialSequence(address string, config Config) (int64, int64) {
@@ -95,23 +93,4 @@ func loadNodes() []string {
 		log.Fatalf("Failed to load nodes.toml: %v", err)
 	}
 	return config.Nodes.RPC
-}
-
-func getGasPrice(value interface{}, denom string) sdk.DecCoin {
-	var decValue sdk.Dec
-	switch v := value.(type) {
-	case int64:
-		decValue = sdk.NewDec(v)
-	case float64:
-		var err error
-		decValue, err = sdk.NewDecFromStr(fmt.Sprintf("%f", v))
-		if err != nil {
-			log.Fatalf("Failed to convert float64 to Dec: %v", err)
-		}
-	default:
-		log.Fatalf("Invalid type for gas price: %T", v)
-	}
-	// Assuming the gas price needs to be scaled to a specific precision
-	decCoin := sdk.NewDecCoinFromDec(denom, decValue.Quo(sdk.NewDec(10000))) // Adjust the scaling factor as needed
-	return decCoin
 }
