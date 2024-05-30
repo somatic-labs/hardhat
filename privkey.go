@@ -15,7 +15,10 @@ func getPrivKey(config Config, mnemonic []byte) (cryptotypes.PrivKey, cryptotype
 
 	algo := hd.Secp256k1
 
-	derivedPriv, err := algo.Derive()(stringmem, "", "m/44'/330'/0'/0/0")
+	// Derive the first key for keyring
+	// NOTE: this function had a bug, it was set to 118, then to 330.
+	// it is now configurable in the config file, to prevent this problem
+	derivedPriv, err := algo.Derive()(stringmem, "", fmt.Sprintf("m/44'/%d'/0'/0/0", config.Slip44))
 	if err != nil {
 		panic(err)
 	}
