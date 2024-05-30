@@ -59,24 +59,23 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 	// Create a new TxBuilder.
 	txBuilder := encodingConfig.TxConfig.NewTxBuilder()
 
-	//	receiver, _ := generateRandomString()
 	token := sdk.NewCoin(config.Denom, sdk.NewInt(1))
 
 	// commented out to support ibc v3
 	//	memo := strings.Repeat(config.IBCMemo, config.IBCMemoRepeat)
 
 	// commented to do many small transactions instead of one big one
-	//	ibcaddr, err := generateRandomString(config)
-	//	if err != nil {
-	//		return nil, "", err
-	//	}
+	ibcaddr, err := generateRandomString(config)
+	if err != nil {
+		return nil, "", err
+	}
 
 	msg := types.NewMsgTransfer(
 		"transfer",
 		config.Channel,
 		token,
 		address,
-		"osmo13ln6j9u70p6r28n5zdq9a7kj98h5hjk256pz6p",
+		ibcaddr,
 		clienttypes.NewHeight(uint64(config.RevisionNumber), uint64(config.TimeoutHeight)), // Adjusted timeout height
 		uint64(0),
 		//		memo,
@@ -94,7 +93,7 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 	txBuilder.SetGasLimit(gasLimit)
 
 	// Calculate fee based on gas limit and a fixed gas price
-	gasPrice := sdk.NewDecCoinFromDec(config.Denom, sdk.NewDecWithPrec(30, 1)) // 0.025 token per gas unit
+	gasPrice := sdk.NewDecCoinFromDec(config.Denom, sdk.NewDecWithPrec(1, 1)) // 0.025 token per gas unit
 	feeAmount := gasPrice.Amount.MulInt64(int64(gasLimit)).RoundInt()
 	feecoin := sdk.NewCoin(config.Denom, feeAmount)
 	txBuilder.SetFeeAmount(sdk.NewCoins(feecoin))
