@@ -129,6 +129,7 @@ type Config struct {
 	IBCChannel     string `toml:"ibc_channel"`
 	BaseGas        int    `toml:"base_gas"`
 	Denom          string `toml:"denom"`
+	Slip44         int    `toml:"slip44"`
 	Gas            struct {
 		Zero   float64 `toml:"zero"`
 		Low    float64 `toml:"low"`
