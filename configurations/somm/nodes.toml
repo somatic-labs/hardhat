@@ -14,14 +14,14 @@ timeout_height = 20720608
 
 [gas]
 zero = 0
-low = 0.1
-medium = 0.25
+low = 0.01
+medium = 0.025
 high = 0.04
 
 
 [nodes]
 rpc  = [
-"http://135.181.210.171:2077",
+"http://127.0.0.1:26657"
 ]
 
 
