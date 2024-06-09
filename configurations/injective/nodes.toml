@@ -1,0 +1,34 @@
+chain = "injective"
+channel = "channel-1"
+denom = "inj"
+prefix = "inj"
+gas_per_byte = 10
+base_gas = 110000
+ibc_memo = "This should not cause any problems.  If it does, contact @interchain_io"
+memo = "Just checking on this"
+ibc_memo_repeat = 10
+rand_min = 300000
+rand_max = 400000
+revision_number = 4
+timeout_height = 20720608
+slip44 = 60
+
+[gas]
+zero = 0
+low = 160000000
+medium = 0.25
+high = 0.04
+
+
+[nodes]
+rpc  = [
+    "http://162.55.65.206:26657",
+    "http://49.12.171.161:26657",
+    "http://37.27.56.238:5401",
+
+]
+
+api = "https://injective-api.polkachu.com:443"
+
+
+
