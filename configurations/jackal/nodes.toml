@@ -1,0 +1,29 @@
+chain = "jackal"
+channel = "channel-39"
+denom = "ujkl"
+prefix = "jkl"
+gas_per_byte = 10
+slip44 = 118
+base_gas = 200000
+ibc_memo = "This should not cause any problems"
+memo = "Just checking on this"
+ibc_memo_repeat = 10
+rand_min = 725000
+rand_max = 725000
+revision_number = 4
+timeout_height = 20720608
+
+[gas]
+low = 2
+precision = 3
+
+
+
+[nodes]
+rpc  = [
+    "http://65.108.230.113:11127",
+    "http://65.108.66.174:27657",
+]
+
+api = "https://jackal-api.polkachu.com:443"
+
