@@ -1,5 +1,5 @@
 chain = "umee"
-channel = "channel-0"
+channel = "channel-1"
 denom = "uumee"
 prefix = "umee"
 gas_per_byte = 10
@@ -9,9 +9,8 @@ memo = "Just checking on this"
 ibc_memo_repeat = 10
 rand_min = 743000
 rand_max = 743000
-revision_number = 1
-precision = 1
-timeout_height = 16875083
+revision_number = 4
+timeout_height = 20976658
 slip44 = 118
 
 
