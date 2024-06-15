@@ -5,7 +5,7 @@ go 1.22.3
 require (
 	github.com/BurntSushi/toml v1.2.1
 	github.com/cometbft/cometbft v0.37.5
-	github.com/cosmos/cosmos-sdk v0.47.11
+	github.com/cosmos/cosmos-sdk v0.47.12
 	github.com/cosmos/ibc-go/v7 v7.4.0
 
 )
