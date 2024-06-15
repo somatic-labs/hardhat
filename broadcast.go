@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/hex"
 	"fmt"
 	"log"
-	"math/rand"
+	"math/big"
 	"net/http"
 	"strings"
 	"time"
@@ -179,16 +180,18 @@ func BroadcastTransaction(txBytes []byte, rpcEndpoint string) (*coretypes.Result
 }
 
 func generateRandomString(config Config) (string, error) {
-	src := rand.NewSource(time.Now().UnixNano())
-	r := rand.New(src)
-
-	sizeB := r.Intn(config.RandMax-config.RandMin+1) + config.RandMin // Generate random size between 300000 and 400000 bytes
+	// Generate a random size between config.RandMin and config.RandMax
+	sizeB, err := rand.Int(rand.Reader, big.NewInt(int64(config.RandMax-config.RandMin+1)))
+	if err != nil {
+		return "", err
+	}
+	sizeB = sizeB.Add(sizeB, big.NewInt(int64(config.RandMin)))
 
 	// Calculate the number of bytes to generate (2 characters per byte in hex encoding)
-	nBytes := sizeB / 2
+	nBytes := int(sizeB.Int64()) / 2
 
 	randomBytes := make([]byte, nBytes)
-	_, err := r.Read(randomBytes)
+	_, err = rand.Read(randomBytes)
 	if err != nil {
 		return "", err
 	}

@@ -70,7 +70,7 @@ func main() {
 			sequenceMap[nodeURL] = 0
 			sequenceMu.Unlock()
 
-			for {
+			for { //nolint:gosimple // need to fis this but I keep finding solutinos that don't do the same thing as this.
 				select {
 				case <-transactionCh:
 					sequenceMu.Lock()
