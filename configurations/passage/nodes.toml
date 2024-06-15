@@ -1,0 +1,28 @@
+chain = "passage"
+channel = "channel-0"
+denom = "upasg"
+prefix = "pasg"
+gas_per_byte = 10
+slip44 = 118
+base_gas = 200000
+ibc_memo = "This should not cause any problems"
+memo = "Just checking on this"
+ibc_memo_repeat = 10
+rand_min = 725000
+rand_max = 725000
+revision_number = 1
+timeout_height = 17889225
+
+[gas]
+low = 1
+precision = 6
+
+
+
+[nodes]
+rpc  = [
+    "http://65.108.101.158:20557",
+]
+
+api = "https://passage-api.polkachu.com:443"
+
