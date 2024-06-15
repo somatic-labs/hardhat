@@ -1,0 +1,31 @@
+run:
+  tests: true
+  timeout: 10m
+
+linters:
+  disable-all: true
+  enable:
+    - exportloopref
+    - errcheck
+    - gci
+    - goconst
+    - gocritic
+    - gofumpt
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - nakedret
+    - staticcheck
+    - thelper
+    - typecheck
+    - stylecheck
+    - revive
+    - typecheck
+    - tenv
+    - unconvert
+    # Prefer unparam over revive's unused param. It is more thorough in its checking.
+    - unparam
+    - unused
+    - misspell
