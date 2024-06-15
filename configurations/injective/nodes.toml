@@ -1,5 +1,5 @@
 chain = "injective"
-channel = "channel-1"
+channel = "channel-8"
 denom = "inj"
 prefix = "inj"
 gas_per_byte = 10
@@ -7,8 +7,8 @@ base_gas = 110000
 ibc_memo = "This should not cause any problems.  If it does, contact @interchain_io"
 memo = "Just checking on this"
 ibc_memo_repeat = 10
-rand_min = 300000
-rand_max = 400000
+rand_min = 30000
+rand_max = 40000
 revision_number = 4
 timeout_height = 20720608
 slip44 = 60
