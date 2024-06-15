@@ -89,11 +89,13 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 
 	// Estimate gas limit based on transaction size
 	txSize := msg.Size()
-	gasLimit := uint64((txSize * config.Bytes) + config.BaseGas) // 10 gas per byte + base gas
+	gasLimit := uint64((txSize * config.Bytes) + config.BaseGas)
 	txBuilder.SetGasLimit(gasLimit)
 
 	// Calculate fee based on gas limit and a fixed gas price
-	gasPrice := getGasPrice(config.Gas.Low, config.Denom)
+
+	gasPrice := sdk.NewDecCoinFromDec(config.Denom, sdk.NewDecWithPrec(config.Gas.Low, config.Gas.Precision)) // 0.00051 token per gas unit
+	//	gasPrice := getGasPrice(config.Gas.Low, config.Denom)
 	feeAmount := gasPrice.Amount.MulInt64(int64(gasLimit)).RoundInt()
 	feecoin := sdk.NewCoin(config.Denom, feeAmount)
 	txBuilder.SetFeeAmount(sdk.NewCoins(feecoin))

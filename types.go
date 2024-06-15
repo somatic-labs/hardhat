@@ -131,10 +131,8 @@ type Config struct {
 	Denom          string `toml:"denom"`
 	Slip44         int    `toml:"slip44"`
 	Gas            struct {
-		Zero   interface{} `toml:"zero"`
-		Low    interface{} `toml:"low"`
-		Medium interface{} `toml:"medium"`
-		High   interface{} `toml:"high"`
+		Low       int64 `toml:"low"`
+		Precision int64 `toml:"precision"`
 	} `toml:"gas"`
 	Nodes struct {
 		RPC []string `toml:"rpc"`
