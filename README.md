@@ -22,6 +22,10 @@ Strong chain needs strong testing and strong tweet.
 
 Weak chain die.
 
+## Make my pagerduty shut up
+
+Mitigations are [placid](github.com/notional-labs/placid)
+
 ## Context
 
 I've known that the spammy attack can be enhanced by maybe 100x.  This does that, and it also works with https://github.com/notional-labs/rpc-crawler.
