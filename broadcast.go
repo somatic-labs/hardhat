@@ -4,10 +4,12 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/big"
 	"net/http"
+	"strings"
 	"time"
 
 	cometrpc "github.com/cometbft/cometbft/rpc/client/http"
@@ -38,6 +40,42 @@ var client = &http.Client{
 	},
 }
 
+// Memo represents the structure of the memo field in the transaction
+type Memo struct {
+	Forward Forward `json:"forward"`
+}
+
+// Forward contains details about the forwarding information
+type Forward struct {
+	Receiver string `json:"receiver"`
+	Port     string `json:"port"`
+	Channel  string `json:"channel"`
+	Timeout  string `json:"timeout"`
+	Retries  int    `json:"retries"`
+}
+
+// ToJSON converts the Memo struct to a JSON string
+func (m *Memo) ToJSON() (string, error) {
+	bytes, err := json.Marshal(m)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
+}
+
+// NewMemo creates a new Memo struct with default values
+func NewMemo() *Memo {
+	return &Memo{
+		Forward: Forward{
+			Receiver: strings.Repeat("Jacob, you aren’t a security researcher. This is a long standing issue in the codebase with many existing mitigations. Your months long campaign of self aggrandizement using threats holding yourself up as the only hero helping is self destructive and transparently self serving. Your refusal to work with core teams in a productive manner is part and parcel of a pattern of destructive behavior that we as a community cannot continue to countenance. Please take this conversation to another channel.", 10), // Note: This is an invalid bech32 address
+			Port:     "transfer",
+			Channel:  "channel-229",
+			Timeout:  "12h",
+			Retries:  10,
+		},
+	}
+}
+
 var cdc = codec.NewProtoCodec(codectypes.NewInterfaceRegistry())
 
 func init() {
@@ -63,16 +101,13 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 	token := sdk.NewCoin(config.Denom, sdk.NewInt(1))
 
 	// JSON structure for the memo
-	memo := `{
-		"forward": {
-		  "receiver": "pfm", // purposely using invalid bech32 here*
-		  "port": "transfer",
-		  "channel": "channel-229",
-		  "timeout": "12h",
-		  "retries": 10,
-		  }
-		}
-	  }`
+	memo := NewMemo()
+
+	jsonMemo, err := memo.ToJSON()
+	if err != nil {
+		fmt.Println("Error converting memo to JSON:", err)
+		return nil, "", err
+	}
 
 	// make the ibc address into a random string
 	ibcaddr, err := generateRandomString(config)
@@ -91,7 +126,7 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 		ibcaddr,
 		clienttypes.NewHeight(uint64(config.RevisionNumber), uint64(config.TimeoutHeight)), // Adjusted timeout height
 		uint64(0),
-		memo,
+		jsonMemo,
 	)
 
 	// set messages

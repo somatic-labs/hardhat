@@ -8,8 +8,8 @@ ibc_memo = "This should not cause any problems"
 memo = "Just checking on this"
 ibc_memo_repeat = 10
 slip44 = 118
-rand_min = 1000
-rand_max = 25000
+rand_min = 20000
+rand_max = 300000
 revision_number = 4
 timeout_height = 21720608
 
