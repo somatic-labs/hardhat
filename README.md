@@ -24,7 +24,7 @@ Weak chain die.
 
 ## Make my pagerduty shut up
 
-Mitigations are [placid](github.com/notional-labs/placid)
+Mitigations are [placid](github.com/notional-labs/placid).  As reporting to [ICF](https://interchain.io) has failed and resulted in retaliation, you will need to encourage chain teams to integrate the mitigations found in the placid repository.
 
 ## Context
 
