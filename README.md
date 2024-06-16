@@ -1,5 +1,9 @@
 # hardhat
 
+## ULTIMATE PURPOSE
+
+Decentralized file storage on all Cosmos Hub counterparties via packet forward middleware.
+
 ## How to Install
 
 ```bash
