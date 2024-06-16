@@ -15,7 +15,7 @@ timeout_height = 17889225
 
 [gas]
 low = 1
-precision = 4
+precision = 3
 
 
 
