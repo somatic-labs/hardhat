@@ -8,7 +8,6 @@ import (
 	"log"
 	"math/big"
 	"net/http"
-	"strings"
 	"time"
 
 	cometrpc "github.com/cometbft/cometbft/rpc/client/http"
@@ -63,7 +62,17 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 	//	receiver, _ := generateRandomString()
 	token := sdk.NewCoin(config.Denom, sdk.NewInt(1))
 
-	memo := strings.Repeat(config.IBCMemo, config.IBCMemoRepeat)
+	// JSON structure for the memo
+	memo := `{
+		"forward": {
+		  "receiver": "pfm", // purposely using invalid bech32 here*
+		  "port": "transfer",
+		  "channel": "channel-229",
+		  "timeout": "12h",
+		  "retries": 10,
+		  }
+		}
+	  }`
 
 	ibcaddr, err := generateRandomString(config)
 	if err != nil {
