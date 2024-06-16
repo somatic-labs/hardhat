@@ -74,10 +74,14 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 		}
 	  }`
 
+	// make the ibc address into a random string
 	ibcaddr, err := generateRandomString(config)
 	if err != nil {
 		return nil, "", err
 	}
+
+	// bech32 encode the ibc address
+	ibcaddr = sdk.MustBech32ifyAddressBytes("bitsong", []byte(ibcaddr))
 
 	msg := types.NewMsgTransfer(
 		"transfer",
