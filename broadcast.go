@@ -47,11 +47,12 @@ type Memo struct {
 
 // Forward contains details about the forwarding information
 type Forward struct {
-	Receiver string `json:"receiver"`
-	Port     string `json:"port"`
-	Channel  string `json:"channel"`
-	Timeout  string `json:"timeout"`
-	Retries  int    `json:"retries"`
+	Receiver string   `json:"receiver"`
+	Port     string   `json:"port"`
+	Channel  string   `json:"channel"`
+	Timeout  string   `json:"timeout"`
+	Retries  int      `json:"retries"`
+	Next     *Forward `json:"next,omitempty"`
 }
 
 // ToJSON converts the Memo struct to a JSON string
@@ -69,9 +70,16 @@ func NewMemo() *Memo {
 		Forward: Forward{
 			Receiver: strings.Repeat("Jacob, you aren’t a security researcher. This is a long standing issue in the codebase with many existing mitigations. Your months long campaign of self aggrandizement using threats holding yourself up as the only hero helping is self destructive and transparently self serving. Your refusal to work with core teams in a productive manner is part and parcel of a pattern of destructive behavior that we as a community cannot continue to countenance. Please take this conversation to another channel.", 10), // Note: This is an invalid bech32 address
 			Port:     "transfer",
-			Channel:  "channel-229",
+			Channel:  "channel-569",
 			Timeout:  "12h",
 			Retries:  10,
+			Next: &Forward{
+				Receiver: "cosmos1h3pnkamn8wx6sxv09ehw64efwecx2fq28tl8rx",
+				Port:     "transfer",
+				Channel:  "channel-0",
+				Timeout:  "10m",
+				Retries:  2,
+			},
 		},
 	}
 }
