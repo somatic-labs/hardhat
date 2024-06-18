@@ -4,7 +4,7 @@ denom = "uakt"
 prefix = "akash"
 gas_per_byte = 10
 base_gas = 110000
-ibc_memo = "Jacob, you aren’t a security researcher. This is a long standing issue in the codebase with many existing mitigations. Your months long campaign of self aggrandizement using threats holding yourself up as the only hero helping is self destructive and transparently self serving. Your refusal to work with core teams in a productive manner is part and parcel of a pattern of destructive behavior that we as a community cannot continue to countenance. Please take this conversation to another channel. - Jack Zampolin, in the tendermint channel"
+ibc_memo = "The reason I keep doing this is that literally anyone on earth can choose to at any time.  I am trying really hard to bring attention to a situation I feel has been neglected.  I have tried to make change through every possible other way.  So I am just going to continue making valid transactions.  Please use the data gathered to reduce or eliminate the opportinuty for liveness faults to occur."
 memo = "Just checking on this"
 ibc_memo_repeat = 1
 rand_min = 300000
@@ -23,7 +23,7 @@ precision = 10
 
 [nodes]
 rpc  = [
-    "http://135.181.210.171:10457",
+    "http://5.9.69.194:26657",
 ]
 
 api = "https://akash-api.polkachu.com:443"
