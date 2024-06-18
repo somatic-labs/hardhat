@@ -18,7 +18,7 @@ slip44 = 118
 
 [gas]
 low = 1
-precision = 4
+precision = 5
 
 
 [nodes]
