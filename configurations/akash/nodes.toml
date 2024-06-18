@@ -1,14 +1,14 @@
-chain = "kujira"
+chain = "akash"
 channel = "channel-0"
-denom = "ukuji"
-prefix = "kujira"
+denom = "uakt"
+prefix = "akash"
 gas_per_byte = 10
 base_gas = 110000
 ibc_memo = "Jacob, you aren’t a security researcher. This is a long standing issue in the codebase with many existing mitigations. Your months long campaign of self aggrandizement using threats holding yourself up as the only hero helping is self destructive and transparently self serving. Your refusal to work with core teams in a productive manner is part and parcel of a pattern of destructive behavior that we as a community cannot continue to countenance. Please take this conversation to another channel. - Jack Zampolin, in the tendermint channel"
 memo = "Just checking on this"
 ibc_memo_repeat = 1
-rand_min = 100
-rand_max = 500
+rand_min = 300000
+rand_max = 700000
 revision_number = 4
 timeout_height = 21901107 
 slip44 = 118
@@ -17,16 +17,16 @@ slip44 = 118
 
 
 [gas]
-low = 38
-precision = 4
+low = 1
+precision = 10
 
 
 [nodes]
 rpc  = [
-    "http://65.109.33.48:10657",
+    "http://135.181.210.171:10457",
 ]
 
-api = "https://a-kujira--a1f4bb74a50728120e4f8c8054a8bb4c.gw.notionalapi.net"
+api = "https://akash-api.polkachu.com:443"
 
 
 
