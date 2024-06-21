@@ -38,10 +38,17 @@ spammy-go takes the output of the rpc-crawler, which is open RPCs.
 
 Then, spammy-go will blast 30kb IBC transfers into every rpc at once at top speed.  
 
-Specificially this exploits:
+Specificially this tests:
 
 * banana king
+  * reported in 2022 by @ctrl_felix and myself 
 * p2p-storms
+  * reported in 2021
+  * seen in May 2022 on Luna Classic
+  * seen on Stride in 2023
+  * replicated and repoeted in 2023
+
+Neither of these are bugs according to ICF. banana King is a desired feature according to ICF, and P2P storms does not exist, according to ICF.
 
 
 
