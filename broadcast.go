@@ -65,21 +65,14 @@ func (m *Memo) ToJSON() (string, error) {
 }
 
 // NewMemo creates a new Memo struct with default values
-func NewMemo() *Memo {
+func NewMemo(config Config) *Memo {
 	return &Memo{
 		Forward: Forward{
-			Receiver: strings.Repeat("Jacob, you aren’t a security researcher. This is a long standing issue in the codebase with many existing mitigations. Your months long campaign of self aggrandizement using threats holding yourself up as the only hero helping is self destructive and transparently self serving. Your refusal to work with core teams in a productive manner is part and parcel of a pattern of destructive behavior that we as a community cannot continue to countenance. Please take this conversation to another channel.", 10), // Note: This is an invalid bech32 address
+			Receiver: strings.Repeat(config.IBCMemo, config.IBCMemoRepeat), // Note: This is an invalid bech32 address
 			Port:     "transfer",
 			Channel:  "channel-569",
 			Timeout:  "12h",
 			Retries:  10,
-			Next: &Forward{
-				Receiver: "cosmos1h3pnkamn8wx6sxv09ehw64efwecx2fq28tl8rx",
-				Port:     "transfer",
-				Channel:  "channel-0",
-				Timeout:  "10m",
-				Retries:  2,
-			},
 		},
 	}
 }
@@ -109,7 +102,7 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 	token := sdk.NewCoin(config.Denom, sdk.NewInt(1))
 
 	// JSON structure for the memo
-	memo := NewMemo()
+	memo := NewMemo(config)
 
 	jsonMemo, err := memo.ToJSON()
 	if err != nil {
