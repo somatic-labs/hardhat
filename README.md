@@ -4,6 +4,8 @@
 
 Decentralized file storage on all Cosmos Hub counterparties via packet forward middleware.
 
+A new and innovative kind of permanence. 
+
 ## How to Install
 
 ```bash
@@ -19,6 +21,8 @@ Pre-baked mainnet configurations are in the configurations folder.  You need a f
 ## You set off my pagerduty
 
 Possibly.  But really, I didn't set off your pagerduty.  Lack of diligence and attending to security reports, over the course of years, set off your pagerduty.  Individuals should not be able to stop or slow blockchains.  If one person can push around a decentralized system, it ceases to be decentralized. 
+
+So please feel free ro uae hardhat to determine if your chain of choice accurately describes its capacity to transact, because keeping the configured capaxity below whaf your chain of choice can handle ensures that the music can flow smoothly.
 
 Tweets should not be able to harm blockchains.
 
