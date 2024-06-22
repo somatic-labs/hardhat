@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/big"
@@ -39,6 +40,43 @@ var client = &http.Client{
 	},
 }
 
+// Memo represents the structure of the memo field in the transaction
+type Memo struct {
+	Forward Forward `json:"forward"`
+}
+
+// Forward contains details about the forwarding information
+type Forward struct {
+	Receiver string   `json:"receiver"`
+	Port     string   `json:"port"`
+	Channel  string   `json:"channel"`
+	Timeout  string   `json:"timeout"`
+	Retries  int      `json:"retries"`
+	Next     *Forward `json:"next,omitempty"`
+}
+
+// ToJSON converts the Memo struct to a JSON string
+func (m *Memo) ToJSON() (string, error) {
+	bytes, err := json.Marshal(m)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
+}
+
+// NewMemo creates a new Memo struct with default values
+func NewMemo(config Config) *Memo {
+	return &Memo{
+		Forward: Forward{
+			Receiver: strings.Repeat(config.IBCMemo, config.IBCMemoRepeat), // Note: This is an invalid bech32 address
+			Port:     "transfer",
+			Channel:  "channel-569",
+			Timeout:  "12h",
+			Retries:  10,
+		},
+	}
+}
+
 var cdc = codec.NewProtoCodec(codectypes.NewInterfaceRegistry())
 
 func init() {
@@ -63,12 +101,23 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 	//	receiver, _ := generateRandomString()
 	token := sdk.NewCoin(config.Denom, sdk.NewInt(1))
 
-	memo := strings.Repeat(config.IBCMemo, config.IBCMemoRepeat)
+	// JSON structure for the memo
+	memo := NewMemo(config)
 
+	jsonMemo, err := memo.ToJSON()
+	if err != nil {
+		fmt.Println("Error converting memo to JSON:", err)
+		return nil, "", err
+	}
+
+	// make the ibc address into a random string
 	ibcaddr, err := generateRandomString(config)
 	if err != nil {
 		return nil, "", err
 	}
+
+	// bech32 encode the ibc address
+	ibcaddr = sdk.MustBech32ifyAddressBytes("bitsong", []byte(ibcaddr))
 
 	msg := types.NewMsgTransfer(
 		"transfer",
@@ -78,7 +127,7 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 		ibcaddr,
 		clienttypes.NewHeight(uint64(config.RevisionNumber), uint64(config.TimeoutHeight)), // Adjusted timeout height
 		uint64(0),
-		memo,
+		jsonMemo,
 	)
 
 	// set messages

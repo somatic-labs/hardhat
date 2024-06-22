@@ -1,0 +1,32 @@
+chain = "akash"
+channel = "channel-0"
+denom = "uakt"
+prefix = "akash"
+gas_per_byte = 10
+base_gas = 110000
+ibc_memo = "The reason I keep doing this is that literally anyone on earth can choose to at any time.  I am trying really hard to bring attention to a situation I feel has been neglected.  I have tried to make change through every possible other way.  So I am just going to continue making valid transactions.  Please use the data gathered to reduce or eliminate the opportinuty for liveness faults to occur.  Comet PR 3008 by Dev Ojha may fix this."
+memo = "Just checking on this"
+ibc_memo_repeat = 1
+rand_min = 300000
+rand_max = 700000
+revision_number = 4
+timeout_height = 21901107 
+slip44 = 118
+
+
+
+
+[gas]
+low = 1
+precision = 5
+
+
+[nodes]
+rpc  = [
+    "http://65.108.108.42:26657",
+]
+
+api = "https://akash-api.polkachu.com:443"
+
+
+

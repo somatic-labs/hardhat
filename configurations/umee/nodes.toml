@@ -7,10 +7,10 @@ base_gas = 110000
 ibc_memo = "Jacob, you aren’t a security researcher. This is a long standing issue in the codebase with many existing mitigations. Your months long campaign of self aggrandizement using threats holding yourself up as the only hero helping is self destructive and transparently self serving. Your refusal to work with core teams in a productive manner is part and parcel of a pattern of destructive behavior that we as a community cannot continue to countenance. Please take this conversation to another channel. - Jack Zampolin, in the tendermint channel"
 memo = "Just checking on this"
 ibc_memo_repeat = 10
-rand_min = 743000
-rand_max = 743000
+rand_min = 15000
+rand_max = 15000
 revision_number = 4
-timeout_height = 20976658
+timeout_height = 21720608 
 slip44 = 118
 
 
@@ -23,10 +23,7 @@ precision = 1
 
 [nodes]
 rpc  = [
-#    "http://65.109.112.148:27659",
-#    "http://65.108.73.245:26657",
-    "http://65.109.33.48:10657",
-#    "http://95.216.77.56:26657",
+"http://95.217.228.108:16257",
 ]
 
 api = "https://umee-api.polkachu.com:443"
