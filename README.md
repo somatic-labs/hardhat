@@ -36,11 +36,9 @@ Mitigations are [placid](github.com/notional-labs/placid).  As reporting to [ICF
 
 ## Context
 
-I've known that the spammy attack can be enhanced by maybe 100x.  This does that, and it also works with https://github.com/notional-labs/rpc-crawler.
+I've known that the spammy technique can be enhanced by maybe 100x.  This does that, and it also works with https://github.com/notional-labs/rpc-crawler.
 
-spammy-go takes the output of the rpc-crawler, which is open RPCs.  
-
-Then, spammy-go will blast 30kb IBC transfers into every rpc at once at top speed.  
+spammy-go takes the output of the rpc-crawler, which is open RPCs.    
 
 Specificially this tests:
 
@@ -53,6 +51,8 @@ Specificially this tests:
   * replicated and repoeted in 2023
 
 Neither of these are bugs according to ICF. banana King is a desired feature according to ICF, and P2P storms does not exist, according to ICF.
+
+initally, i felt that it was a bug that transactions could be so large but eventually i realized that it was a very powerful feature!
 
 
 
