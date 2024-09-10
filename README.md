@@ -54,6 +54,12 @@ Neither of these are bugs according to ICF. banana King is a desired feature acc
 
 initally, i felt that it was a bug that transactions could be so large but eventually i realized that it was a very powerful feature!
 
+## Results
+
+Releasing hardhat to the public and demonstrating its capablities resulted in getting p2p storms fixed after 3 years of reporting it.
+
+Additional information available at https://github.com/faddat/fasf-report
+
 
 
 ## Bonus content
