@@ -18,6 +18,7 @@ const (
 )
 
 func main() {
+	// Load the config
 	config := Config{}
 	if _, err := toml.DecodeFile("nodes.toml", &config); err != nil {
 		log.Fatalf("Failed to load config: %v", err)
@@ -27,23 +28,25 @@ func main() {
 	sequenceMap := make(map[string]int64)
 	var sequenceMu sync.Mutex // Mutex to protect the sequenceMap
 
-	// tracking vars
+	// Tracking variables
 	var successfulTxns int
 	var failedTxns int
 	var mu sync.Mutex
 	// Declare a map to hold response codes and their counts
 	responseCodes := make(map[uint32]int)
 
-	// keyring
-	// read seed phrase
-	mnemonic, _ := os.ReadFile("seedphrase")
+	// Read seed phrase
+	mnemonic, err := os.ReadFile("seedphrase")
+	if err != nil {
+		log.Fatalf("Failed to read seed phrase: %v", err)
+	}
 	privkey, pubKey, acctaddress := getPrivKey(config, mnemonic)
-	// Create an in-memory keyring
 
+	// Load nodes from config
 	successfulNodes := loadNodes()
 	fmt.Printf("Number of nodes: %d\n", len(successfulNodes))
 
-	// get correct chain-id
+	// Get the correct chain ID
 	chainID, err := getChainID(successfulNodes[0])
 	if err != nil {
 		log.Fatalf("Failed to get chain ID: %v", err)
@@ -58,6 +61,13 @@ func main() {
 	// Get the account number (accNum) once
 	_, accNum := getInitialSequence(acctaddress, config)
 
+	// Build msgParams map
+	msgParams := map[string]interface{}{
+		"amount":   config.MsgParams.Amount,
+		"receiver": config.MsgParams.Receiver,
+		// Add other parameters from MsgParams as needed
+	}
+
 	transactionCh := make(chan string, BatchSize) // Create a buffered channel for transactions
 
 	for _, nodeURL := range successfulNodes {
@@ -70,14 +80,25 @@ func main() {
 			sequenceMap[nodeURL] = 0
 			sequenceMu.Unlock()
 
-			for { //nolint:gosimple // need to fis this but I keep finding solutinos that don't do the same thing as this.
+			for {
 				select {
 				case <-transactionCh:
 					sequenceMu.Lock()
 					currentSequence := sequenceMap[nodeURL]
 					sequenceMu.Unlock()
 
-					resp, _, err := sendIBCTransferViaRPC(config, nodeURL, chainID, uint64(currentSequence), uint64(accNum), privkey, pubKey, acctaddress)
+					resp, _, err := sendTransactionViaRPC(
+						config,
+						nodeURL,
+						chainID,
+						uint64(currentSequence),
+						uint64(accNum),
+						privkey,
+						pubKey,
+						acctaddress,
+						config.MsgType,
+						msgParams,
+					)
 					if err != nil {
 						mu.Lock()
 						failedTxns++
@@ -106,7 +127,8 @@ func main() {
 								sequenceMu.Lock()
 								sequenceMap[nodeURL] = newSequence
 								sequenceMu.Unlock()
-								fmt.Printf("%s Node: %s, we had an account sequence mismatch, adjusting to %d\n", time.Now().Format("15:04:05"), nodeURL, newSequence)
+								fmt.Printf("%s Node: %s, we had an account sequence mismatch, adjusting to %d\n",
+									time.Now().Format("15:04:05"), nodeURL, newSequence)
 							}
 						} else {
 							// Increment the per-node sequence number if there was no mismatch
@@ -130,8 +152,8 @@ func main() {
 
 	wg.Wait()
 
-	fmt.Println("successful transactions: ", successfulTxns)
-	fmt.Println("failed transactions: ", failedTxns)
+	fmt.Println("Successful transactions: ", successfulTxns)
+	fmt.Println("Failed transactions: ", failedTxns)
 	totalTxns := successfulTxns + failedTxns
 	fmt.Println("Response code breakdown:")
 	for code, count := range responseCodes {

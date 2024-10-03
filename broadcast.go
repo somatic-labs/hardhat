@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
 	cometrpc "github.com/cometbft/cometbft/rpc/client/http"
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	tmtypes "github.com/cometbft/cometbft/types"
@@ -23,11 +24,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer"
-	"github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	ibc "github.com/cosmos/ibc-go/v7/modules/core"
-	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	"github.com/cosmos/ibc-go/v7/testing/simapp"
+	"github.com/cosmos/cosmos-sdk/x/bank"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/cosmos/ibc-go/modules/apps/callbacks/testing/simapp/params"
+	"github.com/cosmos/ibc-go/v8/modules/apps/transfer"
+	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	ibc "github.com/cosmos/ibc-go/v8/modules/core"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 )
 
 var client = &http.Client{
@@ -68,7 +71,7 @@ func (m *Memo) ToJSON() (string, error) {
 func NewMemo(config Config) *Memo {
 	return &Memo{
 		Forward: Forward{
-			Receiver: strings.Repeat(config.IBCMemo, config.IBCMemoRepeat), // Note: This is an invalid bech32 address
+			Receiver: strings.Repeat(config.IbCMemo, config.IbCMemoRepeat), // Note: This is an invalid bech32 address
 			Port:     "transfer",
 			Channel:  "channel-569",
 			Timeout:  "12h",
@@ -81,54 +84,60 @@ var cdc = codec.NewProtoCodec(codectypes.NewInterfaceRegistry())
 
 func init() {
 	types.RegisterInterfaces(cdc.InterfaceRegistry())
+	banktypes.RegisterInterfaces(cdc.InterfaceRegistry())
 }
 
-func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, sequence, accnum uint64, privKey cryptotypes.PrivKey, pubKey cryptotypes.PubKey, address string) (response *coretypes.ResultBroadcastTx, txbody string, err error) {
-	encodingConfig := simapp.MakeTestEncodingConfig()
-	encodingConfig.Marshaler = cdc
+func sendTransactionViaRPC(config Config, rpcEndpoint string, chainID string, sequence, accnum uint64, privKey cryptotypes.PrivKey, pubKey cryptotypes.PubKey, fromAddress string, msgType string, msgParams map[string]interface{}) (response *coretypes.ResultBroadcastTx, txbody string, err error) {
+	encodingConfig := params.MakeTestEncodingConfig()
+	encodingConfig.Codec = cdc
 
 	// Register IBC and other necessary types
 	transferModule := transfer.AppModuleBasic{}
 	ibcModule := ibc.AppModuleBasic{}
+	bankModule := bank.AppModuleBasic{}
 
 	ibcModule.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	transferModule.RegisterInterfaces(encodingConfig.InterfaceRegistry)
+	bankModule.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	std.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 
 	// Create a new TxBuilder.
 	txBuilder := encodingConfig.TxConfig.NewTxBuilder()
 
-	//	receiver, _ := generateRandomString()
-	token := sdk.NewCoin(config.Denom, sdk.NewInt(1))
+	var msg sdk.Msg
 
-	// JSON structure for the memo
-	memo := NewMemo(config)
+	switch msgType {
+	case "ibc_transfer":
+		token := sdk.NewCoin(config.Denom, sdkmath.NewInt(msgParams["amount"].(int64)))
+		memo := NewMemo(config)
+		jsonMemo, err := memo.ToJSON()
+		if err != nil {
+			return nil, "", fmt.Errorf("error converting memo to JSON: %w", err)
+		}
+		ibcaddr, err := generateRandomString(config)
+		if err != nil {
+			return nil, "", err
+		}
+		ibcaddr = sdk.MustBech32ifyAddressBytes(config.Prefix, []byte(ibcaddr))
+		msg = types.NewMsgTransfer(
+			"transfer",
+			config.Channel,
+			token,
+			fromAddress,
+			ibcaddr,
+			clienttypes.NewHeight(uint64(config.RevisionNumber), uint64(config.TimeoutHeight)),
+			uint64(0),
+			jsonMemo,
+		)
 
-	jsonMemo, err := memo.ToJSON()
-	if err != nil {
-		fmt.Println("Error converting memo to JSON:", err)
-		return nil, "", err
+	case "bank_send":
+		toAddress := msgParams["to_address"].(string)
+		amount := sdk.NewCoins(sdk.NewCoin(config.Denom, sdkmath.NewInt(msgParams["amount"].(int64))))
+		msg = banktypes.NewMsgSend(sdk.AccAddress(fromAddress), sdk.AccAddress(toAddress), amount)
+
+	default:
+		return nil, "", fmt.Errorf("unsupported message type: %s", msgType)
 	}
-
-	// make the ibc address into a random string
-	ibcaddr, err := generateRandomString(config)
-	if err != nil {
-		return nil, "", err
-	}
-
-	// bech32 encode the ibc address
-	ibcaddr = sdk.MustBech32ifyAddressBytes("bitsong", []byte(ibcaddr))
-
-	msg := types.NewMsgTransfer(
-		"transfer",
-		config.Channel,
-		token,
-		address,
-		ibcaddr,
-		clienttypes.NewHeight(uint64(config.RevisionNumber), uint64(config.TimeoutHeight)), // Adjusted timeout height
-		uint64(0),
-		jsonMemo,
-	)
 
 	// set messages
 	err = txBuilder.SetMsgs(msg)
@@ -137,14 +146,12 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 	}
 
 	// Estimate gas limit based on transaction size
-	txSize := msg.Size()
-	gasLimit := uint64((txSize * config.Bytes) + config.BaseGas)
+	txSize := len(msg.String())
+	gasLimit := uint64((int64(txSize) * config.Bytes) + config.BaseGas)
 	txBuilder.SetGasLimit(gasLimit)
 
 	// Calculate fee based on gas limit and a fixed gas price
-
-	gasPrice := sdk.NewDecCoinFromDec(config.Denom, sdk.NewDecWithPrec(config.Gas.Low, config.Gas.Precision)) // 0.00051 token per gas unit
-	//	gasPrice := getGasPrice(config.Gas.Low, config.Denom)
+	gasPrice := sdk.NewDecCoinFromDec(config.Denom, sdkmath.LegacyNewDecWithPrec(config.Gas.Low, config.Gas.Precision))
 	feeAmount := gasPrice.Amount.MulInt64(int64(gasLimit)).RoundInt()
 	feecoin := sdk.NewCoin(config.Denom, feeAmount)
 	txBuilder.SetFeeAmount(sdk.NewCoins(feecoin))
@@ -155,12 +162,11 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 	// First round: we gather all the signer infos. We use the "set empty
 	// signature" hack to do that.
 	sigV2 := signing.SignatureV2{
-		PubKey: pubKey,
-		Data: &signing.SingleSignatureData{
-			SignMode:  encodingConfig.TxConfig.SignModeHandler().DefaultMode(),
-			Signature: nil,
-		},
+		PubKey:   pubKey,
 		Sequence: sequence,
+		Data: &signing.SingleSignatureData{
+			SignMode: signing.SignMode(encodingConfig.TxConfig.SignModeHandler().DefaultMode()),
+		},
 	}
 
 	err = txBuilder.SetSignatures(sigV2)
@@ -175,8 +181,10 @@ func sendIBCTransferViaRPC(config Config, rpcEndpoint string, chainID string, se
 		Sequence:      sequence,
 	}
 
-	signed, err := tx.SignWithPrivKey(
-		encodingConfig.TxConfig.SignModeHandler().DefaultMode(), signerData,
+	ctx := context.Background()
+
+	signed, err := tx.SignWithPrivKey(ctx,
+		signing.SignMode(encodingConfig.TxConfig.SignModeHandler().DefaultMode()), signerData,
 		txBuilder, privKey, encodingConfig.TxConfig, sequence)
 	if err != nil {
 		fmt.Println("couldn't sign")
@@ -230,11 +238,11 @@ func BroadcastTransaction(txBytes []byte, rpcEndpoint string) (*coretypes.Result
 
 func generateRandomString(config Config) (string, error) {
 	// Generate a random size between config.RandMin and config.RandMax
-	sizeB, err := rand.Int(rand.Reader, big.NewInt(int64(config.RandMax-config.RandMin+1)))
+	sizeB, err := rand.Int(rand.Reader, big.NewInt(config.RandMax-config.RandMin+1))
 	if err != nil {
 		return "", err
 	}
-	sizeB = sizeB.Add(sizeB, big.NewInt(int64(config.RandMin)))
+	sizeB = sizeB.Add(sizeB, big.NewInt(config.RandMin))
 
 	// Calculate the number of bytes to generate (2 characters per byte in hex encoding)
 	nBytes := int(sizeB.Int64()) / 2

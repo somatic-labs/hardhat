@@ -18,6 +18,7 @@ linters:
     - misspell
     - nakedret
     - staticcheck
+    - maintidx
     - thelper
     - typecheck
     - stylecheck
