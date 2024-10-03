@@ -131,9 +131,28 @@ func sendTransactionViaRPC(config Config, rpcEndpoint string, chainID string, se
 		)
 
 	case "bank_send":
-		toAddress := msgParams["to_address"].(string)
+		// Decode 'fromAddress' from Bech32 to sdk.AccAddress
+		fromAccAddress, err := sdk.AccAddressFromBech32(fromAddress)
+		if err != nil {
+			return nil, "", fmt.Errorf("invalid from address: %w", err)
+		}
+
+		// Decode 'toAddress' from Bech32 to sdk.AccAddress
+		toAccAddressInterface, ok := msgParams["to_address"]
+		if !ok || toAccAddressInterface == nil {
+			return nil, "", fmt.Errorf("missing 'to_address' in msgParams")
+		}
+		toAddressStr := toAccAddressInterface.(string)
+		toAccAddress, err := sdk.AccAddressFromBech32(toAddressStr)
+		if err != nil {
+			return nil, "", fmt.Errorf("invalid to address: %w", err)
+		}
+
+		// Construct the amount
 		amount := sdk.NewCoins(sdk.NewCoin(config.Denom, sdkmath.NewInt(msgParams["amount"].(int64))))
-		msg = banktypes.NewMsgSend(sdk.AccAddress(fromAddress), sdk.AccAddress(toAddress), amount)
+
+		// Create the MsgSend message
+		msg = banktypes.NewMsgSend(fromAccAddress, toAccAddress, amount)
 
 	default:
 		return nil, "", fmt.Errorf("unsupported message type: %s", msgType)

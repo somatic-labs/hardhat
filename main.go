@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	BatchSize  = 100
-	MaxWorkers = 10000
+	BatchSize  = 10000 // Increase as needed for load testing
+	MaxWorkers = 5000  // Adjust based on your system's capabilities
 )
 
 func main() {
@@ -24,136 +24,135 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	// Create a map to store the sequence number for each node
-	sequenceMap := make(map[string]int64)
-	var sequenceMu sync.Mutex // Mutex to protect the sequenceMap
-
-	// Tracking variables
-	var successfulTxns int
-	var failedTxns int
-	var mu sync.Mutex
-	// Declare a map to hold response codes and their counts
-	responseCodes := make(map[uint32]int)
-
 	// Read seed phrase
 	mnemonic, err := os.ReadFile("seedphrase")
 	if err != nil {
 		log.Fatalf("Failed to read seed phrase: %v", err)
 	}
-	privkey, pubKey, acctaddress := getPrivKey(config, mnemonic)
+	privKey, pubKey, acctAddress := getPrivKey(config, mnemonic)
 
 	// Load nodes from config
-	successfulNodes := loadNodes()
-	fmt.Printf("Number of nodes: %d\n", len(successfulNodes))
+	nodes := loadNodes()
+	if len(nodes) == 0 {
+		log.Fatal("No nodes available to send transactions")
+	}
+	fmt.Printf("Number of nodes: %d\n", len(nodes))
 
 	// Get the correct chain ID
-	chainID, err := getChainID(successfulNodes[0])
+	chainID, err := getChainID(nodes[0])
 	if err != nil {
 		log.Fatalf("Failed to get chain ID: %v", err)
 	}
 
-	var wg sync.WaitGroup
+	// Compile regex patterns for error messages
+	reMismatch := regexp.MustCompile(`account sequence mismatch, expected (\d+), got (\d+): incorrect account sequence`)
+	reTxExists := regexp.MustCompile(`tx already exists in cache`)
 
-	// Compile the regex outside the loop
-	reMismatch := regexp.MustCompile("account sequence mismatch")
-	reExpected := regexp.MustCompile(`expected (\d+)`)
-
-	// Get the account number (accNum) once
-	_, accNum := getInitialSequence(acctaddress, config)
+	// Get the initial account number and sequence
+	initialSequence, accNum := getInitialSequence(acctAddress, config)
+	sequence := initialSequence
 
 	// Build msgParams map
 	msgParams := map[string]interface{}{
-		"amount":   config.MsgParams.Amount,
-		"receiver": config.MsgParams.Receiver,
-		// Add other parameters from MsgParams as needed
+		"amount":     config.MsgParams.Amount,
+		"to_address": config.MsgParams.ToAddress,
 	}
 
-	transactionCh := make(chan string, BatchSize) // Create a buffered channel for transactions
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	var successfulTxns, failedTxns int
+	responseCodes := make(map[uint32]int)
 
-	for _, nodeURL := range successfulNodes {
+	// Channel to control concurrency
+	txChan := make(chan struct{}, MaxWorkers)
+
+	// Function to send transactions as fast as possible
+	for i := 0; i < BatchSize; i++ {
 		wg.Add(1)
 		go func(nodeURL string) {
 			defer wg.Done()
-
-			// Initialize the sequence number for the node to zero
-			sequenceMu.Lock()
-			sequenceMap[nodeURL] = 0
-			sequenceMu.Unlock()
-
 			for {
-				select {
-				case <-transactionCh:
-					sequenceMu.Lock()
-					currentSequence := sequenceMap[nodeURL]
-					sequenceMu.Unlock()
+				txChan <- struct{}{} // Acquire a slot
 
-					resp, _, err := sendTransactionViaRPC(
-						config,
-						nodeURL,
-						chainID,
-						uint64(currentSequence),
-						uint64(accNum),
-						privkey,
-						pubKey,
-						acctaddress,
-						config.MsgType,
-						msgParams,
-					)
-					if err != nil {
-						mu.Lock()
-						failedTxns++
-						mu.Unlock()
-						fmt.Printf("%s Node: %s, Error: %v\n", time.Now().Format("15:04:05"), nodeURL, err)
-					} else {
-						mu.Lock()
-						successfulTxns++
-						mu.Unlock()
-						if resp != nil {
-							// Increment the count for this response code
-							mu.Lock()
-							responseCodes[resp.Code]++
-							mu.Unlock()
-						}
+				// Lock around sequence assignment
+				mu.Lock()
+				currentSequence := sequence
+				sequence++
+				mu.Unlock()
 
-						match := reMismatch.MatchString(resp.Log)
-						if match {
-							matches := reExpected.FindStringSubmatch(resp.Log)
-							if len(matches) > 1 {
-								newSequence, err := strconv.ParseInt(matches[1], 10, 64)
-								if err != nil {
-									log.Fatalf("Failed to convert sequence to integer: %v", err)
-								}
-								// Update the per-node sequence to the expected value
-								sequenceMu.Lock()
-								sequenceMap[nodeURL] = newSequence
-								sequenceMu.Unlock()
-								fmt.Printf("%s Node: %s, we had an account sequence mismatch, adjusting to %d\n",
-									time.Now().Format("15:04:05"), nodeURL, newSequence)
+				// Send the transaction
+				resp, _, err := sendTransactionViaRPC(
+					config,
+					nodeURL,
+					chainID,
+					uint64(currentSequence),
+					uint64(accNum),
+					privKey,
+					pubKey,
+					acctAddress,
+					config.MsgType,
+					msgParams,
+				)
+
+				if err != nil {
+					fmt.Printf("%s Node: %s, Error: %v\n", time.Now().Format("15:04:05"), nodeURL, err)
+
+					// Adjust sequence on specific errors
+					switch {
+					case reMismatch.MatchString(err.Error()):
+						// Extract the expected sequence number from the error message
+						matches := reMismatch.FindStringSubmatch(err.Error())
+						if len(matches) > 1 {
+							expectedSeq, parseErr := strconv.ParseInt(matches[1], 10, 64)
+							if parseErr == nil {
+								mu.Lock()
+								sequence = expectedSeq
+								mu.Unlock()
+								fmt.Printf("%s Node: %s, Set sequence to expected value %d due to mismatch\n",
+									time.Now().Format("15:04:05"), nodeURL, sequence)
+							} else {
+								// Handle parsing error
+								mu.Lock()
+								sequence++
+								mu.Unlock()
 							}
 						} else {
-							// Increment the per-node sequence number if there was no mismatch
-							sequenceMu.Lock()
-							sequenceMap[nodeURL]++
-							sequenceMu.Unlock()
-							fmt.Printf("%s Node: %s, sequence: %d\n", time.Now().Format("15:04:05"), nodeURL, sequenceMap[nodeURL])
+							// If regex did not capture the expected number, increment the sequence
+							mu.Lock()
+							sequence++
+							mu.Unlock()
 						}
+					case reTxExists.MatchString(err.Error()):
+						// Since the transaction already exists, increment the sequence to avoid reusing it
+						mu.Lock()
+						sequence++
+						mu.Unlock()
+					default:
+						// For other errors, you may choose to log or handle differently
 					}
+
+					mu.Lock()
+					failedTxns++
+					mu.Unlock()
+				} else {
+					fmt.Printf("%s Node: %s, Transaction succeeded, sequence: %d\n",
+						time.Now().Format("15:04:05"), nodeURL, currentSequence)
+
+					mu.Lock()
+					successfulTxns++
+					responseCodes[resp.Code]++
+					mu.Unlock()
 				}
+
+				<-txChan // Release the slot
 			}
-		}(nodeURL)
+		}(nodes[i%len(nodes)])
 	}
-
-	// Send transactions to the worker goroutines
-	for i := 0; i < len(successfulNodes)*BatchSize; i++ {
-		transactionCh <- fmt.Sprintf("Transaction %d", i)
-	}
-
-	close(transactionCh) // Close the transaction channel when all transactions are sent
 
 	wg.Wait()
 
-	fmt.Println("Successful transactions: ", successfulTxns)
-	fmt.Println("Failed transactions: ", failedTxns)
+	fmt.Println("Successful transactions:", successfulTxns)
+	fmt.Println("Failed transactions:", failedTxns)
 	totalTxns := successfulTxns + failedTxns
 	fmt.Println("Response code breakdown:")
 	for code, count := range responseCodes {

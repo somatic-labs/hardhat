@@ -9,6 +9,12 @@ import (
 )
 
 func getPrivKey(config Config, mnemonic []byte) (cryptotypes.PrivKey, cryptotypes.PubKey, string) {
+
+	sdkConfig := sdk.GetConfig()
+	sdkConfig.SetBech32PrefixForAccount(config.Prefix, config.Prefix+"pub")
+	sdkConfig.SetBech32PrefixForValidator(config.Prefix+"valoper", config.Prefix+"valoperpub")
+	sdkConfig.SetBech32PrefixForConsensusNode(config.Prefix+"valcons", config.Prefix+"valconspub")
+	sdkConfig.Seal()
 	// Generate a Bip32 HD wallet for the mnemonic and a user supplied password
 	// create master key and derive first key for keyring
 	stringmem := string(mnemonic)
@@ -28,12 +34,6 @@ func getPrivKey(config Config, mnemonic []byte) (cryptotypes.PrivKey, cryptotype
 	// Create master private key from
 
 	pubKey := privKey.PubKey()
-
-	// Convert the public key to Bech32 with custom HRP
-	// bech32PubKey, err := bech32ifyPubKeyWithCustomHRP("celestia", pubKey)
-	// if err != nil {
-	//	panic(err)
-	// }
 
 	addressbytes := sdk.AccAddress(pubKey.Address().Bytes())
 	address, err := sdk.Bech32ifyAddressBytes(config.Prefix, addressbytes)
