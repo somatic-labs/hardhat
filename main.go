@@ -13,8 +13,7 @@ import (
 )
 
 const (
-	BatchSize  = 10000 // Increase as needed for load testing
-	MaxWorkers = 5000  // Adjust based on your system's capabilities
+	BatchSize = 1000 // Increase as needed for load testing
 )
 
 func main() {
@@ -46,11 +45,6 @@ func main() {
 
 	// Compile regex patterns for error messages
 	reMismatch := regexp.MustCompile(`account sequence mismatch, expected (\d+), got (\d+): incorrect account sequence`)
-	reTxExists := regexp.MustCompile(`tx already exists in cache`)
-
-	// Get the initial account number and sequence
-	initialSequence, accNum := getInitialSequence(acctAddress, config)
-	sequence := initialSequence
 
 	// Build msgParams map
 	msgParams := map[string]interface{}{
@@ -63,22 +57,25 @@ func main() {
 	var successfulTxns, failedTxns int
 	responseCodes := make(map[uint32]int)
 
-	// Channel to control concurrency
-	txChan := make(chan struct{}, MaxWorkers)
+	// Channel to control overall concurrency if needed
+	// Here, we limit the total number of concurrent transactions
+	txChan := make(chan struct{}, len(nodes)) // One slot per node
 
-	// Function to send transactions as fast as possible
-	for i := 0; i < BatchSize; i++ {
+	// Function to send transactions per node
+	for _, nodeURL := range nodes {
 		wg.Add(1)
 		go func(nodeURL string) {
 			defer wg.Done()
-			for {
+
+			// Fetch the initial account number and sequence from this node
+			initialSequence, accNum := getInitialSequence(acctAddress, config)
+			sequence := initialSequence
+
+			for i := 0; i < BatchSize; i++ {
 				txChan <- struct{}{} // Acquire a slot
 
-				// Lock around sequence assignment
-				mu.Lock()
 				currentSequence := sequence
 				sequence++
-				mu.Unlock()
 
 				// Send the transaction
 				resp, _, err := sendTransactionViaRPC(
@@ -102,33 +99,23 @@ func main() {
 					case reMismatch.MatchString(err.Error()):
 						// Extract the expected sequence number from the error message
 						matches := reMismatch.FindStringSubmatch(err.Error())
-						if len(matches) > 1 {
-							expectedSeq, parseErr := strconv.ParseInt(matches[1], 10, 64)
+						if len(matches) >= 2 {
+							expectedSeq, parseErr := strconv.ParseUint(matches[1], 10, 64)
 							if parseErr == nil {
-								mu.Lock()
-								sequence = expectedSeq
-								mu.Unlock()
+								sequence = int64(expectedSeq)
 								fmt.Printf("%s Node: %s, Set sequence to expected value %d due to mismatch\n",
 									time.Now().Format("15:04:05"), nodeURL, sequence)
 							} else {
 								// Handle parsing error
-								mu.Lock()
-								sequence++
-								mu.Unlock()
+								sequence--
 							}
 						} else {
-							// If regex did not capture the expected number, increment the sequence
-							mu.Lock()
-							sequence++
-							mu.Unlock()
+							// If regex did not capture the expected number, decrement the sequence
+							sequence--
 						}
-					case reTxExists.MatchString(err.Error()):
-						// Since the transaction already exists, increment the sequence to avoid reusing it
-						mu.Lock()
-						sequence++
-						mu.Unlock()
 					default:
 						// For other errors, you may choose to log or handle differently
+						sequence++
 					}
 
 					mu.Lock()
@@ -146,7 +133,7 @@ func main() {
 
 				<-txChan // Release the slot
 			}
-		}(nodes[i%len(nodes)])
+		}(nodeURL)
 	}
 
 	wg.Wait()

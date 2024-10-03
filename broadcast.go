@@ -87,7 +87,10 @@ func init() {
 	banktypes.RegisterInterfaces(cdc.InterfaceRegistry())
 }
 
-func sendTransactionViaRPC(config Config, rpcEndpoint string, chainID string, sequence, accnum uint64, privKey cryptotypes.PrivKey, pubKey cryptotypes.PubKey, fromAddress string, msgType string, msgParams map[string]interface{}) (response *coretypes.ResultBroadcastTx, txbody string, err error) {
+func sendTransactionViaRPC(config Config, rpcEndpoint string, chainID string, sequence, accnum uint64,
+	privKey cryptotypes.PrivKey, pubKey cryptotypes.PubKey, fromAddress string, msgType string,
+	msgParams map[string]interface{}) (response *coretypes.ResultBroadcastTx, txbody string, err error) {
+
 	encodingConfig := params.MakeTestEncodingConfig()
 	encodingConfig.Codec = cdc
 
@@ -105,12 +108,13 @@ func sendTransactionViaRPC(config Config, rpcEndpoint string, chainID string, se
 	txBuilder := encodingConfig.TxConfig.NewTxBuilder()
 
 	var msg sdk.Msg
+	var memo string // Declare a variable to hold the memo
 
 	switch msgType {
 	case "ibc_transfer":
 		token := sdk.NewCoin(config.Denom, sdkmath.NewInt(msgParams["amount"].(int64)))
-		memo := NewMemo(config)
-		jsonMemo, err := memo.ToJSON()
+		memoStruct := NewMemo(config)
+		jsonMemo, err := memoStruct.ToJSON()
 		if err != nil {
 			return nil, "", fmt.Errorf("error converting memo to JSON: %w", err)
 		}
@@ -129,6 +133,7 @@ func sendTransactionViaRPC(config Config, rpcEndpoint string, chainID string, se
 			uint64(0),
 			jsonMemo,
 		)
+		memo = jsonMemo // Set the memo for IBC transfer
 
 	case "bank_send":
 		// Decode 'fromAddress' from Bech32 to sdk.AccAddress
@@ -154,11 +159,17 @@ func sendTransactionViaRPC(config Config, rpcEndpoint string, chainID string, se
 		// Create the MsgSend message
 		msg = banktypes.NewMsgSend(fromAccAddress, toAccAddress, amount)
 
+		// Generate a 256-byte random string for the memo
+		memo, err = generateRandomStringOfLength(256)
+		if err != nil {
+			return nil, "", fmt.Errorf("error generating random memo: %w", err)
+		}
+
 	default:
 		return nil, "", fmt.Errorf("unsupported message type: %s", msgType)
 	}
 
-	// set messages
+	// Set messages
 	err = txBuilder.SetMsgs(msg)
 	if err != nil {
 		return nil, "", err
@@ -175,11 +186,11 @@ func sendTransactionViaRPC(config Config, rpcEndpoint string, chainID string, se
 	feecoin := sdk.NewCoin(config.Denom, feeAmount)
 	txBuilder.SetFeeAmount(sdk.NewCoins(feecoin))
 
-	txBuilder.SetMemo(config.Memo)
+	// Set the memo (either random for bank_send or as per IBC transfer)
+	txBuilder.SetMemo(memo)
 	txBuilder.SetTimeoutHeight(0)
 
-	// First round: we gather all the signer infos. We use the "set empty
-	// signature" hack to do that.
+	// First round: we gather all the signer infos. We use the "set empty signature" hack to do that.
 	sigV2 := signing.SignatureV2{
 		PubKey:   pubKey,
 		Sequence: sequence,
@@ -224,7 +235,7 @@ func sendTransactionViaRPC(config Config, rpcEndpoint string, chainID string, se
 
 	resp, err := BroadcastTransaction(txJSONBytes, rpcEndpoint)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to broadcast transaction: %w", err)
+		return resp, string(txJSONBytes), fmt.Errorf("failed to broadcast transaction: %w", err)
 	}
 
 	return resp, string(txJSONBytes), nil
@@ -241,16 +252,14 @@ func BroadcastTransaction(txBytes []byte, rpcEndpoint string) (*coretypes.Result
 	ctx := context.Background()
 	res, err := cmtCli.BroadcastTxSync(ctx, t)
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println("error at broadcast")
+		fmt.Println("Error at broadcast:", err)
 		return nil, err
 	}
 
-	fmt.Println("other: ", res.Data)
-	fmt.Println("log: ", res.Log)
-	fmt.Println("code: ", res.Code)
-	fmt.Println("code: ", res.Codespace)
-	fmt.Println("txid: ", res.Hash)
+	if res.Code != 0 {
+		// Return an error containing the code and log message
+		return res, fmt.Errorf("broadcast error code %d: %s", res.Code, res.Log)
+	}
 
 	return res, nil
 }
@@ -273,4 +282,17 @@ func generateRandomString(config Config) (string, error) {
 	}
 
 	return hex.EncodeToString(randomBytes), nil
+}
+
+func generateRandomStringOfLength(n int) (string, error) {
+	letters := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+	b := make([]rune, n)
+	for i := range b {
+		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
+		if err != nil {
+			return "", err
+		}
+		b[i] = letters[num.Int64()]
+	}
+	return string(b), nil
 }

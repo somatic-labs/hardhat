@@ -5,7 +5,7 @@ channel = "channel-1"
 denom = "uom"
 prefix = "mantra"
 gas_per_byte = 100
-base_gas = 200000
+base_gas = 150000
 ibc_memo = "Your IBC Memo"
 memo = "Just checking on this.  And making sure that we have all 256 bytes.  Because why not.  If we gonna storm it might as well be with all the bytes."
 ibc_memo_repeat = 10
@@ -18,7 +18,7 @@ slip44 = 118
 msg_type = "bank_send"
 
 [msg_params]
-amount = 1000
+amount = 1
 to_address = "mantra1uqrar205hjv4s8832kwj8e6xhwvk4x0eqml043"
 
 [gas]
@@ -26,5 +26,5 @@ low = 25
 precision = 2
 
 [nodes]
-rpc = ["https://rpc.dukong.mantrachain.dev:443"]
+rpc = ["http://127.0.0.1:26657", "https://rpc.dukong.mantrachain.dev:443"]
 api = "https://api.dukong.mantrachain.dev:443"
