@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	BatchSize = 1000 // Increase as needed for load testing
+	BatchSize = 100000000 // Increase as needed for load testing
 )
 
 func main() {
