@@ -5,9 +5,9 @@ use cosmwasm_std::{
 
 use crate::msg::{ExecuteMsg, InstantiateMsg, StoreFileResponse};
 use crate::state::FILES;
-
 use data_encoding::BASE32;
 use sha2::{Digest, Sha256};
+use zstd::encode_all;
 
 #[entry_point]
 pub fn instantiate(
@@ -41,9 +41,12 @@ pub fn execute_store_file(deps: DepsMut, data: Binary) -> StdResult<Response> {
         ));
     }
 
-    // Compute SHA256 hash
+    // Compress the data
+    let compressed_data = encode_all(&data, 3)?; // Compression level 3 (balance between speed and compression ratio)
+
+    // Compute SHA256 hash of the compressed data
     let mut hasher = Sha256::new();
-    hasher.update(&data);
+    hasher.update(&compressed_data);
     let digest = hasher.finalize();
 
     let sha256_hex = hex::encode(digest);
@@ -57,11 +60,13 @@ pub fn execute_store_file(deps: DepsMut, data: Binary) -> StdResult<Response> {
     // CID is prefixed with "b" in CIDv1 Base32 encoding
     let cid_string = format!("b{}", cid_base32.to_lowercase());
 
-    // Store file data in storage, keyed by SHA256 hash
-    FILES.save(deps.storage, &sha256_hex, &data)?;
+    // Store compressed file data in storage, keyed by SHA256 hash
+    FILES.save(deps.storage, &sha256_hex, &compressed_data)?;
 
     let res = Response::new()
         .add_attribute("method", "execute_store_file")
+        .add_attribute("original_size", data.len().to_string())
+        .add_attribute("compressed_size", compressed_data.len().to_string())
         .set_data(to_json_binary(&StoreFileResponse {
             sha256: sha256_hex,
             cid: cid_string,
