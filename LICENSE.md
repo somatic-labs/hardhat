@@ -13,6 +13,7 @@ The Interchain Foundation, and the teams it funds are not allowed to use this so
 * Informal Systems
 * Amulet
 * Interchain GMBH
+* Decentrio
 
 If you are not charging money for the use of this software, you can use it on production networks to ensure that they live up to the performance claims made by the Interchain Foundation, at no cost.
 
