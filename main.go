@@ -51,8 +51,13 @@ func main() {
 
 	// Build msgParams map
 	msgParams := map[string]interface{}{
-		"amount":     config.MsgParams.Amount,
-		"to_address": config.MsgParams.ToAddress,
+		"amount":        config.MsgParams.Amount,
+		"to_address":    config.MsgParams.ToAddress,
+		"wasm_file":     config.MsgParams.WasmFile,
+		"code_id":       config.MsgParams.CodeID,
+		"init_msg":      config.MsgParams.InitMsg,
+		"contract_addr": config.MsgParams.ContractAddr,
+		"exec_msg":      config.MsgParams.ExecMsg,
 	}
 
 	var wg sync.WaitGroup

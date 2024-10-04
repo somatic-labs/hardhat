@@ -6,55 +6,57 @@ import (
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/tx"
+	types "github.com/somatic-labs/hardhat/types"
 )
 
-type WasmHandler struct {
-	txConfig tx.Config
-}
-
-func NewWasmHandler(txConfig tx.Config) *WasmHandler {
-	return &WasmHandler{
-		txConfig: txConfig,
+func CreateStoreCodeMsg(config types.Config, sender string, wasmFile []byte) (sdk.Msg, error) {
+	senderAddr, err := sdk.AccAddressFromBech32(sender)
+	if err != nil {
+		return nil, fmt.Errorf("invalid sender address: %w", err)
 	}
-}
 
-func (h *WasmHandler) StoreCode(sender sdk.AccAddress, wasmFile []byte) (*sdk.TxResponse, error) {
 	msg := wasmtypes.MsgStoreCode{
-		Sender:       sender.String(),
+		Sender:       senderAddr.String(),
 		WASMByteCode: wasmFile,
 	}
-
-	return h.broadcastTx(sender, &msg)
+	return &msg, nil
 }
 
-func (h *WasmHandler) InstantiateContract(sender sdk.AccAddress, codeID uint64, initMsg []byte, label string) (*sdk.TxResponse, error) {
+func CreateInstantiateContractMsg(config types.Config, sender string, codeID uint64, initMsg []byte, label string, funds sdk.Coins) (sdk.Msg, error) {
+	senderAddr, err := sdk.AccAddressFromBech32(sender)
+	if err != nil {
+		return nil, fmt.Errorf("invalid sender address: %w", err)
+	}
+
 	msg := wasmtypes.MsgInstantiateContract{
-		Sender: sender.String(),
+		Sender: senderAddr.String(),
+		Admin:  senderAddr.String(), // Using sender as admin, adjust if needed
 		CodeID: codeID,
 		Label:  label,
 		Msg:    initMsg,
-		Funds:  sdk.NewCoins(),
+		Funds:  funds,
 	}
-
-	return h.broadcastTx(sender, &msg)
+	return &msg, nil
 }
 
-func (h *WasmHandler) ExecuteContract(sender sdk.AccAddress, contractAddr string, execMsg []byte, funds sdk.Coins) (*sdk.TxResponse, error) {
+func CreateExecuteContractMsg(config types.Config, sender string, contractAddr string, execMsg []byte, funds sdk.Coins) (sdk.Msg, error) {
+	senderAddr, err := sdk.AccAddressFromBech32(sender)
+	if err != nil {
+		return nil, fmt.Errorf("invalid sender address: %w", err)
+	}
+
+	contractAddress, err := sdk.AccAddressFromBech32(contractAddr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid contract address: %w", err)
+	}
+
 	msg := wasmtypes.MsgExecuteContract{
-		Sender:   sender.String(),
-		Contract: contractAddr,
+		Sender:   senderAddr.String(),
+		Contract: contractAddress.String(),
 		Msg:      execMsg,
 		Funds:    funds,
 	}
-
-	return h.broadcastTx(sender, &msg)
-}
-
-func (h *WasmHandler) broadcastTx(sender sdk.AccAddress, msg sdk.Msg) (*sdk.TxResponse, error) {
-	// Implementation of broadcasting the transaction
-	// This is a placeholder and needs to be implemented based on your specific SDK setup
-	return nil, fmt.Errorf("broadcastTx not implemented")
+	return &msg, nil
 }
 
 // Helper function to create a StoreFile message
