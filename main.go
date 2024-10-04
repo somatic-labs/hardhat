@@ -1,55 +1,51 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
-	"regexp"
 	"strconv"
-	"sync"
+	"strings"
 	"time"
 
 	"github.com/BurntSushi/toml"
+	coretypes "github.com/cometbft/cometbft/rpc/core/types"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/somatic-labs/hardhat/broadcast"
 	"github.com/somatic-labs/hardhat/lib"
 	"github.com/somatic-labs/hardhat/types"
 )
 
 const (
-	BatchSize = 100000000 // Increase as needed for load testing
+	BatchSize       = 100000000
+	MaxRetries      = 10
+	TimeoutDuration = 5 * time.Millisecond
 )
 
 func main() {
-	// Load the config
 	config := types.Config{}
 	if _, err := toml.DecodeFile("nodes.toml", &config); err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	// Read seed phrase
 	mnemonic, err := os.ReadFile("seedphrase")
 	if err != nil {
 		log.Fatalf("Failed to read seed phrase: %v", err)
 	}
 	privKey, pubKey, acctAddress := lib.GetPrivKey(config, mnemonic)
 
-	// Load nodes from config
 	nodes := lib.LoadNodes()
 	if len(nodes) == 0 {
 		log.Fatal("No nodes available to send transactions")
 	}
-	fmt.Printf("Number of nodes: %d\n", len(nodes))
+	nodeURL := nodes[0] // Use only the first node
 
-	// Get the correct chain ID
-	chainID, err := lib.GetChainID(nodes[0])
+	chainID, err := lib.GetChainID(nodeURL)
 	if err != nil {
 		log.Fatalf("Failed to get chain ID: %v", err)
 	}
 
-	// Compile regex patterns for error messages
-	reMismatch := regexp.MustCompile(`account sequence mismatch, expected (\d+), got (\d+): incorrect account sequence`)
-
-	// Build msgParams map
 	msgParams := map[string]interface{}{
 		"amount":        config.MsgParams.Amount,
 		"to_address":    config.MsgParams.ToAddress,
@@ -60,91 +56,44 @@ func main() {
 		"exec_msg":      config.MsgParams.ExecMsg,
 	}
 
-	var wg sync.WaitGroup
-	var mu sync.Mutex
-	var successfulTxns, failedTxns int
+	successfulTxns, failedTxns := 0, 0
 	responseCodes := make(map[uint32]int)
 
-	// Channel to control overall concurrency if needed
-	// Here, we limit the total number of concurrent transactions
-	txChan := make(chan struct{}, len(nodes)) // One slot per node
+	initialSequence, accNum := lib.GetInitialSequence(acctAddress, config)
+	sequence := initialSequence
 
-	// Function to send transactions per node
-	for _, nodeURL := range nodes {
-		wg.Add(1)
-		go func(nodeURL string) {
-			defer wg.Done()
+	for i := 0; i < BatchSize; i++ {
+		currentSequence := sequence
+		sequence++
 
-			// Fetch the initial account number and sequence from this node
-			initialSequence, accNum := lib.GetInitialSequence(acctAddress, config)
-			sequence := initialSequence
+		start := time.Now()
+		resp, _, err := sendTransactionWithRetry(config, nodeURL, chainID, uint64(currentSequence), uint64(accNum), privKey.(cryptotypes.PrivKey), pubKey.(cryptotypes.PubKey), acctAddress, config.MsgType, msgParams)
+		elapsed := time.Since(start)
 
-			for i := 0; i < BatchSize; i++ {
-				txChan <- struct{}{} // Acquire a slot
-
-				currentSequence := sequence
-				sequence++
-
-				// Send the transaction
-				resp, _, err := broadcast.SendTransactionViaRPC(
-					config,
-					nodeURL,
-					chainID,
-					uint64(currentSequence),
-					uint64(accNum),
-					privKey,
-					pubKey,
-					acctAddress,
-					config.MsgType,
-					msgParams,
-				)
-
-				if err != nil {
-					fmt.Printf("%s Node: %s, Error: %v\n", time.Now().Format("15:04:05"), nodeURL, err)
-
-					// Adjust sequence on specific errors
-					switch {
-					case reMismatch.MatchString(err.Error()):
-						// Extract the expected sequence number from the error message
-						matches := reMismatch.FindStringSubmatch(err.Error())
-						if len(matches) >= 2 {
-							expectedSeq, parseErr := strconv.ParseUint(matches[1], 10, 64)
-							if parseErr == nil {
-								sequence = int64(expectedSeq)
-								fmt.Printf("%s Node: %s, Set sequence to expected value %d due to mismatch\n",
-									time.Now().Format("15:04:05"), nodeURL, sequence)
-							} else {
-								// Handle parsing error
-								sequence--
-							}
-						} else {
-							// If regex did not capture the expected number, decrement the sequence
-							sequence--
+		if err != nil {
+			fmt.Printf("%s Error: %v\n", time.Now().Format("15:04:05"), err)
+			if strings.Contains(err.Error(), "account sequence mismatch") {
+				parts := strings.Split(err.Error(), "expected ")
+				if len(parts) > 1 {
+					expectedSeqParts := strings.Split(parts[1], ",")
+					if len(expectedSeqParts) > 0 {
+						expectedSeq, parseErr := strconv.ParseInt(expectedSeqParts[0], 10, 64)
+						if parseErr == nil {
+							sequence = expectedSeq
+							fmt.Printf("%s Set sequence to expected value %d due to mismatch\n",
+								time.Now().Format("15:04:05"), sequence)
 						}
-					default:
-						// For other errors, you may choose to log or handle differently
-						sequence++
 					}
-
-					mu.Lock()
-					failedTxns++
-					mu.Unlock()
-				} else {
-					fmt.Printf("%s Node: %s, Transaction succeeded, sequence: %d\n",
-						time.Now().Format("15:04:05"), nodeURL, currentSequence)
-
-					mu.Lock()
-					successfulTxns++
-					responseCodes[resp.Code]++
-					mu.Unlock()
 				}
-
-				<-txChan // Release the slot
 			}
-		}(nodeURL)
+			failedTxns++
+		} else {
+			fmt.Printf("%s Transaction succeeded, sequence: %d, time: %v\n",
+				time.Now().Format("15:04:05"), currentSequence, elapsed)
+			successfulTxns++
+			responseCodes[resp.Code]++
+		}
 	}
-
-	wg.Wait()
 
 	fmt.Println("Successful transactions:", successfulTxns)
 	fmt.Println("Failed transactions:", failedTxns)
@@ -154,4 +103,60 @@ func main() {
 		percentage := float64(count) / float64(totalTxns) * 100
 		fmt.Printf("Code %d: %d (%.2f%%)\n", code, count, percentage)
 	}
+}
+
+func sendTransactionWithRetry(config types.Config, nodeURL, chainID string, sequence, accNum uint64, privKey cryptotypes.PrivKey, pubKey cryptotypes.PubKey, acctAddress, msgType string, msgParams map[string]interface{}) (*coretypes.ResultBroadcastTx, string, error) {
+	var lastErr error
+	startTime := time.Now()
+	for retry := 0; retry < MaxRetries; retry++ {
+		attemptStart := time.Now()
+
+		// Create a context with a timeout for each attempt
+		ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+		defer cancel()
+
+		respChan := make(chan *coretypes.ResultBroadcastTx)
+		errChan := make(chan error)
+
+		go func() {
+			resp, _, err := broadcast.SendTransactionViaRPC(
+				config,
+				nodeURL,
+				chainID,
+				sequence,
+				accNum,
+				privKey,
+				pubKey,
+				acctAddress,
+				msgType,
+				msgParams,
+			)
+			if err != nil {
+				errChan <- err
+			} else {
+				respChan <- resp
+			}
+		}()
+
+		select {
+		case resp := <-respChan:
+			return resp, "", nil
+		case err := <-errChan:
+			lastErr = err
+		case <-ctx.Done():
+			lastErr = ctx.Err()
+		}
+
+		attemptDuration := time.Since(attemptStart)
+		fmt.Printf("%s Retry %d failed after %v: %v\n", time.Now().Format("15:04:05"), retry, attemptDuration, lastErr)
+
+		if time.Since(startTime) > 1*time.Second {
+			return nil, "", fmt.Errorf("total retry time exceeded 1 second")
+		}
+
+		time.Sleep(TimeoutDuration)
+	}
+
+	totalDuration := time.Since(startTime)
+	return nil, "", fmt.Errorf("failed after %d retries in %v: %v", MaxRetries, totalDuration, lastErr)
 }
