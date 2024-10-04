@@ -1,6 +1,6 @@
 // src/contract.rs
 use cosmwasm_std::{
-    entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
+    entry_point, to_json_binary, Binary, DepsMut, Env, MessageInfo, Response, StdResult,
 };
 
 use crate::msg::{ExecuteMsg, InstantiateMsg, StoreFileResponse};
@@ -46,7 +46,7 @@ pub fn execute_store_file(deps: DepsMut, data: Binary) -> StdResult<Response> {
     hasher.update(&data);
     let digest = hasher.finalize();
 
-    let sha256_hex = hex::encode(&digest);
+    let sha256_hex = hex::encode(digest);
 
     // Compute CID
     let cid_bytes = compute_cid(&digest);
@@ -62,7 +62,7 @@ pub fn execute_store_file(deps: DepsMut, data: Binary) -> StdResult<Response> {
 
     let res = Response::new()
         .add_attribute("method", "execute_store_file")
-        .set_data(to_binary(&StoreFileResponse {
+        .set_data(to_json_binary(&StoreFileResponse {
             sha256: sha256_hex,
             cid: cid_string,
         })?);
