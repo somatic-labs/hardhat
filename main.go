@@ -20,7 +20,7 @@ import (
 const (
 	BatchSize       = 100000000
 	MaxRetries      = 10
-	TimeoutDuration = 5 * time.Millisecond
+	TimeoutDuration = 2 * time.Second
 )
 
 func main() {
@@ -46,15 +46,7 @@ func main() {
 		log.Fatalf("Failed to get chain ID: %v", err)
 	}
 
-	msgParams := map[string]interface{}{
-		"amount":        config.MsgParams.Amount,
-		"to_address":    config.MsgParams.ToAddress,
-		"wasm_file":     config.MsgParams.WasmFile,
-		"code_id":       config.MsgParams.CodeID,
-		"init_msg":      config.MsgParams.InitMsg,
-		"contract_addr": config.MsgParams.ContractAddr,
-		"exec_msg":      config.MsgParams.ExecMsg,
-	}
+	msgParams := config.MsgParams
 
 	successfulTxns, failedTxns := 0, 0
 	responseCodes := make(map[uint32]int)
@@ -105,14 +97,14 @@ func main() {
 	}
 }
 
-func sendTransactionWithRetry(config types.Config, nodeURL, chainID string, sequence, accNum uint64, privKey cryptotypes.PrivKey, pubKey cryptotypes.PubKey, acctAddress, msgType string, msgParams map[string]interface{}) (*coretypes.ResultBroadcastTx, string, error) {
+func sendTransactionWithRetry(config types.Config, nodeURL, chainID string, sequence, accNum uint64, privKey cryptotypes.PrivKey, pubKey cryptotypes.PubKey, acctAddress, msgType string, msgParams types.MsgParams) (*coretypes.ResultBroadcastTx, string, error) {
 	var lastErr error
 	startTime := time.Now()
 	for retry := 0; retry < MaxRetries; retry++ {
 		attemptStart := time.Now()
 
 		// Create a context with a timeout for each attempt
-		ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 
 		respChan := make(chan *coretypes.ResultBroadcastTx)
@@ -150,7 +142,7 @@ func sendTransactionWithRetry(config types.Config, nodeURL, chainID string, sequ
 		attemptDuration := time.Since(attemptStart)
 		fmt.Printf("%s Retry %d failed after %v: %v\n", time.Now().Format("15:04:05"), retry, attemptDuration, lastErr)
 
-		if time.Since(startTime) > 1*time.Second {
+		if time.Since(startTime) > 2*time.Second {
 			return nil, "", fmt.Errorf("total retry time exceeded 1 second")
 		}
 

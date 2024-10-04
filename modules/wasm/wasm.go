@@ -8,25 +8,32 @@ import (
 	sdkmath "cosmossdk.io/math"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/somatic-labs/hardhat/lib"
 	types "github.com/somatic-labs/hardhat/types"
 )
 
-func CreateStoreCodeMsg(config types.Config, sender string, msgParams types.MsgParams) (sdk.Msg, error) {
+func CreateStoreCodeMsg(config types.Config, sender string, msgParams types.MsgParams) (sdk.Msg, string, error) {
 	senderAddr, err := sdk.AccAddressFromBech32(sender)
 	if err != nil {
-		return nil, fmt.Errorf("invalid sender address: %w", err)
+		return nil, "", fmt.Errorf("invalid sender address: %w", err)
 	}
 
 	wasmFile, err := os.ReadFile(msgParams.WasmFile)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read WASM file: %w", err)
+		return nil, "", fmt.Errorf("failed to read WASM file: %w", err)
 	}
 
 	msg := wasmtypes.MsgStoreCode{
 		Sender:       senderAddr.String(),
 		WASMByteCode: wasmFile,
 	}
-	return &msg, nil
+
+	memo, err := lib.GenerateRandomStringOfLength(256)
+	if err != nil {
+		return nil, "", fmt.Errorf("error generating random memo: %w", err)
+	}
+
+	return &msg, memo, nil
 }
 
 func CreateInstantiateContractMsg(config types.Config, sender string, msgParams types.MsgParams) (sdk.Msg, error) {

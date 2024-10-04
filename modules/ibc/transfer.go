@@ -13,8 +13,8 @@ import (
 	types "github.com/somatic-labs/hardhat/types"
 )
 
-func CreateIBCTransferMsg(config types.Config, fromAddress string, msgParams map[string]interface{}) (sdk.Msg, string, error) {
-	token := sdk.NewCoin(config.Denom, sdkmath.NewInt(msgParams["amount"].(int64)))
+func CreateIBCTransferMsg(config types.Config, fromAddress string, msgParams types.MsgParams) (sdk.Msg, string, error) {
+	token := sdk.NewCoin(config.Denom, sdkmath.NewInt(msgParams.Amount))
 	memoStruct := NewMemo(config)
 	jsonMemo, err := memoStruct.ToJSON()
 	if err != nil {
