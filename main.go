@@ -10,6 +10,9 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
+	"github.com/somatic-labs/hardhat/broadcast"
+	"github.com/somatic-labs/hardhat/lib"
+	"github.com/somatic-labs/hardhat/types"
 )
 
 const (
@@ -18,7 +21,7 @@ const (
 
 func main() {
 	// Load the config
-	config := Config{}
+	config := types.Config{}
 	if _, err := toml.DecodeFile("nodes.toml", &config); err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
@@ -28,17 +31,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to read seed phrase: %v", err)
 	}
-	privKey, pubKey, acctAddress := getPrivKey(config, mnemonic)
+	privKey, pubKey, acctAddress := lib.GetPrivKey(config, mnemonic)
 
 	// Load nodes from config
-	nodes := loadNodes()
+	nodes := lib.LoadNodes()
 	if len(nodes) == 0 {
 		log.Fatal("No nodes available to send transactions")
 	}
 	fmt.Printf("Number of nodes: %d\n", len(nodes))
 
 	// Get the correct chain ID
-	chainID, err := getChainID(nodes[0])
+	chainID, err := lib.GetChainID(nodes[0])
 	if err != nil {
 		log.Fatalf("Failed to get chain ID: %v", err)
 	}
@@ -68,7 +71,7 @@ func main() {
 			defer wg.Done()
 
 			// Fetch the initial account number and sequence from this node
-			initialSequence, accNum := getInitialSequence(acctAddress, config)
+			initialSequence, accNum := lib.GetInitialSequence(acctAddress, config)
 			sequence := initialSequence
 
 			for i := 0; i < BatchSize; i++ {
@@ -78,7 +81,7 @@ func main() {
 				sequence++
 
 				// Send the transaction
-				resp, _, err := sendTransactionViaRPC(
+				resp, _, err := broadcast.SendTransactionViaRPC(
 					config,
 					nodeURL,
 					chainID,
