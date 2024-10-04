@@ -9,7 +9,6 @@ import (
 )
 
 func getPrivKey(config Config, mnemonic []byte) (cryptotypes.PrivKey, cryptotypes.PubKey, string) {
-
 	sdkConfig := sdk.GetConfig()
 	sdkConfig.SetBech32PrefixForAccount(config.Prefix, config.Prefix+"pub")
 	sdkConfig.SetBech32PrefixForValidator(config.Prefix+"valoper", config.Prefix+"valoperpub")

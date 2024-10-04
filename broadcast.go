@@ -89,8 +89,8 @@ func init() {
 
 func sendTransactionViaRPC(config Config, rpcEndpoint string, chainID string, sequence, accnum uint64,
 	privKey cryptotypes.PrivKey, pubKey cryptotypes.PubKey, fromAddress string, msgType string,
-	msgParams map[string]interface{}) (response *coretypes.ResultBroadcastTx, txbody string, err error) {
-
+	msgParams map[string]interface{},
+) (response *coretypes.ResultBroadcastTx, txbody string, err error) {
 	encodingConfig := params.MakeTestEncodingConfig()
 	encodingConfig.Codec = cdc
 
