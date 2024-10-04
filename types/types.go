@@ -1,4 +1,4 @@
-package main
+package types
 
 type Header struct {
 	Height string `json:"height"`
@@ -115,29 +115,46 @@ type Fee struct {
 }
 
 type Config struct {
-	Chain          string `toml:"chain"`
-	Channel        string `toml:"channel"`
-	Prefix         string `toml:"prefix"`
-	Bytes          int    `toml:"gas_per_byte"`
-	RevisionNumber int    `toml:"revision_number"`
-	TimeoutHeight  int    `toml:"timeout_height"`
-	RandMin        int    `toml:"rand_min"`
-	RandMax        int    `toml:"rand_max"`
-	Memo           string `toml:"memo"`
-	IBCMemo        string `toml:"ibc_memo"`
-	IBCMemoRepeat  int    `toml:"ibc_memo_repeat"`
-	IBCChannel     string `toml:"ibc_channel"`
-	BaseGas        int    `toml:"base_gas"`
-	Denom          string `toml:"denom"`
-	Slip44         int    `toml:"slip44"`
-	Gas            struct {
-		Low       int64 `toml:"low"`
-		Precision int64 `toml:"precision"`
-	} `toml:"gas"`
-	Nodes struct {
-		RPC []string `toml:"rpc"`
-		API string   `toml:"api"`
-	} `toml:"nodes"`
+	Bytes          int64       `toml:"bytes"`
+	Chain          string      `toml:"chain"`
+	Channel        string      `toml:"channel"`
+	Denom          string      `toml:"denom"`
+	Prefix         string      `toml:"prefix"`
+	GasPerByte     int64       `toml:"gas_per_byte"`
+	BaseGas        int64       `toml:"base_gas"`
+	IbCMemo        string      `toml:"ibc_memo"`
+	Memo           string      `toml:"memo"`
+	IbCMemoRepeat  int         `toml:"ibc_memo_repeat"`
+	RandMin        int64       `toml:"rand_min"`
+	RandMax        int64       `toml:"rand_max"`
+	RevisionNumber int64       `toml:"revision_number"`
+	TimeoutHeight  int64       `toml:"timeout_height"`
+	Slip44         int         `toml:"slip44"`
+	MsgType        string      `toml:"msg_type"`
+	MsgParams      MsgParams   `toml:"msg_params"`
+	Gas            GasConfig   `toml:"gas"`
+	Nodes          NodesConfig `toml:"nodes"`
+	API            string      `toml:"api"`
+}
+
+type MsgParams struct {
+	Amount    int64  `toml:"amount"`
+	Receiver  string `toml:"receiver"`
+	ToAddress string `toml:"to_address"`
+	// Add other message-specific parameters as needed
+}
+
+type GasConfig struct {
+	Zero      int64 `toml:"zero"`
+	Low       int64 `toml:"low"`
+	Medium    int64 `toml:"medium"`
+	High      int64 `toml:"high"`
+	Precision int64 `toml:"precision"`
+}
+
+type NodesConfig struct {
+	RPC []string `toml:"rpc"`
+	API string   `toml:"api"`
 }
 
 type NodeInfo struct {
