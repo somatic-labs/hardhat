@@ -3,16 +3,23 @@ package wasm
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
+	sdkmath "cosmossdk.io/math"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	types "github.com/somatic-labs/hardhat/types"
 )
 
-func CreateStoreCodeMsg(config types.Config, sender string, wasmFile []byte) (sdk.Msg, error) {
+func CreateStoreCodeMsg(config types.Config, sender string, msgParams types.MsgParams) (sdk.Msg, error) {
 	senderAddr, err := sdk.AccAddressFromBech32(sender)
 	if err != nil {
 		return nil, fmt.Errorf("invalid sender address: %w", err)
+	}
+
+	wasmFile, err := os.ReadFile(msgParams.WasmFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read WASM file: %w", err)
 	}
 
 	msg := wasmtypes.MsgStoreCode{
@@ -22,33 +29,47 @@ func CreateStoreCodeMsg(config types.Config, sender string, wasmFile []byte) (sd
 	return &msg, nil
 }
 
-func CreateInstantiateContractMsg(config types.Config, sender string, codeID uint64, initMsg []byte, label string, funds sdk.Coins) (sdk.Msg, error) {
+func CreateInstantiateContractMsg(config types.Config, sender string, msgParams types.MsgParams) (sdk.Msg, error) {
 	senderAddr, err := sdk.AccAddressFromBech32(sender)
 	if err != nil {
 		return nil, fmt.Errorf("invalid sender address: %w", err)
 	}
 
+	initMsg, err := json.Marshal(msgParams.InitMsg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal init message: %w", err)
+	}
+
+	funds := sdk.NewCoins(sdk.NewCoin(config.Denom, sdkmath.NewInt(msgParams.Amount)))
+
 	msg := wasmtypes.MsgInstantiateContract{
 		Sender: senderAddr.String(),
 		Admin:  senderAddr.String(), // Using sender as admin, adjust if needed
-		CodeID: codeID,
-		Label:  label,
+		CodeID: msgParams.CodeID,
+		Label:  msgParams.Label,
 		Msg:    initMsg,
 		Funds:  funds,
 	}
 	return &msg, nil
 }
 
-func CreateExecuteContractMsg(config types.Config, sender string, contractAddr string, execMsg []byte, funds sdk.Coins) (sdk.Msg, error) {
+func CreateExecuteContractMsg(config types.Config, sender string, msgParams types.MsgParams) (sdk.Msg, error) {
 	senderAddr, err := sdk.AccAddressFromBech32(sender)
 	if err != nil {
 		return nil, fmt.Errorf("invalid sender address: %w", err)
 	}
 
-	contractAddress, err := sdk.AccAddressFromBech32(contractAddr)
+	contractAddress, err := sdk.AccAddressFromBech32(msgParams.ContractAddr)
 	if err != nil {
 		return nil, fmt.Errorf("invalid contract address: %w", err)
 	}
+
+	execMsg, err := json.Marshal(msgParams.ExecMsg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal exec message: %w", err)
+	}
+
+	funds := sdk.NewCoins(sdk.NewCoin(config.Denom, sdkmath.NewInt(msgParams.Amount)))
 
 	msg := wasmtypes.MsgExecuteContract{
 		Sender:   senderAddr.String(),

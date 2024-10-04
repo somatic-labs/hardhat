@@ -146,6 +146,7 @@ type MsgParams struct {
 	InitMsg      string `toml:"init_msg"`
 	ContractAddr string `toml:"contract_addr"`
 	ExecMsg      string `toml:"exec_msg"`
+	Label        string `toml:"label"`
 	// Add other message-specific parameters as needed
 }
 
