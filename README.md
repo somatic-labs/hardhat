@@ -1,10 +1,19 @@
 # hardhat
 
-## ULTIMATE PURPOSE
+## Purpose
 
-Decentralized file storage on all Cosmos Hub counterparties via packet forward middleware.
+Hardhat ensures that users are empowered to test the claims made by the Interchain Foundation about the software stack the ICF funds (except in the case of the cosmos hub, which the ICF raised money for and stopped funding....).
 
-A new and innovative kind of permanence. 
+On several occasions, issues in the stack have led to losses after issues were reported by developers in the Cosmos ecosystem, typically to the disdain of the foundation and teams funded by it.  Thus, it is necessary to build a testing suite that is easy enough for an advanced user to master.  That's what hardhat is, and that's what it's for.  
+
+## Capabilities
+
+* Decentralized file storage using mainnet state
+* Simple configuration for performance testing
+* Testing of the fee market module, to ensure that gas prices increase as described, preventing a p2p storm (this works, great job Skip!)
+* Testing of IBC, to ensure that a chain is safe from Banana King
+* Testing of CometBFT, to ensure that a chain is safe from P2P storms
+
 
 ## How to Install
 
@@ -22,7 +31,9 @@ Pre-baked mainnet configurations are in the configurations folder.  You need a f
 
 Possibly.  But really, I didn't set off your pagerduty.  Lack of diligence and attending to security reports, over the course of years, set off your pagerduty.  Individuals should not be able to stop or slow blockchains.  If one person can push around a decentralized system, it ceases to be decentralized. 
 
-So please feel free ro uae hardhat to determine if your chain of choice accurately describes its capacity to transact, because keeping the configured capaxity below whaf your chain of choice can handle ensures that the music can flow smoothly.
+## there should be no valid transaction capable of harming the normal operation of a secure blockchain
+
+So please feel free ro uae hardhat to determine if your chain of choice accurately describes its capacity to transact, because keeping the configured capacity below what your chain of choice can handle ensures that the music can flow smoothly.
 
 Tweets should not be able to harm blockchains.
 
@@ -38,7 +49,7 @@ Mitigations are [placid](github.com/notional-labs/placid).  As reporting to [ICF
 
 I've known that the spammy technique can be enhanced by maybe 100x.  This does that, and it also works with https://github.com/notional-labs/rpc-crawler.
 
-spammy-go takes the output of the rpc-crawler, which is open RPCs.    
+Hardhat takes the output of the rpc-crawler, which is open RPCs.    
 
 Specificially this tests:
 
@@ -56,10 +67,19 @@ initally, i felt that it was a bug that transactions could be so large but event
 
 ## Results
 
-Releasing hardhat to the public and demonstrating its capablities resulted in getting p2p storms fixed after 3 years of reporting it.
+Releasing hardhat to the public and demonstrating its capablities resulted in getting p2p storms fixed after 3 years of reporting it.  Nothing else worked.
 
 Additional information available at https://github.com/faddat/fasf-report
 
+## LIMITATIONS
+
+Like any blockchain client software, `hardhat` can only make transactions that are explicitly supported by the chains it is used to test.  It has no magic blackhat powers.  Hardhat makes only valid transactions, and can be used to verify claims about those transaction types.
+
+A later product called `darkhat` will test other things.  Please note that using `darkhat` is likely illegal in most places in the world, unless you have explicit permission to do so.  `darkhat` should never be used on a production network, where `hardhat` use is fully legal and encouraged.  `darkhat` will focus on the disruption of the p2p layer of networks with actual black hat techniques.
+
+I have no idea if `darkhat` will be open source.
+
+If you would like to fund `darkhat` please reach out to [Jacob Gadikian](x.com/gadikian).  We think that `darkhat` will be useful in further proving the security of blockchain networks by helping the teams building them to ensure that they cannot be trivially interrupted.
 
 
 ## Bonus content
@@ -716,12 +736,6 @@ I think we're trying to build reliable global scale systems
 ```
 
 
-
-
-
-## LIMITATIONS
-
-Like any blockchain client software, `hardhat` can only make transactions that are explicitly supported by the chains it is used to test.  It has no magic blackhat powers.  
 
 
 
