@@ -6,6 +6,7 @@ import (
 	"log"
 
 	sdkmath "cosmossdk.io/math"
+	wasmd "github.com/CosmWasm/wasmd/x/wasm"
 	cometrpc "github.com/cometbft/cometbft/rpc/client/http"
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	tmtypes "github.com/cometbft/cometbft/types"
@@ -19,12 +20,14 @@ import (
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/cosmos/cosmos-sdk/x/gov"
 	"github.com/cosmos/ibc-go/modules/apps/callbacks/testing/simapp/params"
 	"github.com/cosmos/ibc-go/v8/modules/apps/transfer"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v8/modules/core"
 	hardhatbank "github.com/somatic-labs/hardhat/modules/bank"
 	hardhatibc "github.com/somatic-labs/hardhat/modules/ibc"
+	wasm "github.com/somatic-labs/hardhat/modules/wasm"
 	types "github.com/somatic-labs/hardhat/types"
 )
 
@@ -37,7 +40,7 @@ func init() {
 
 func SendTransactionViaRPC(config types.Config, rpcEndpoint string, chainID string, sequence, accnum uint64,
 	privKey cryptotypes.PrivKey, pubKey cryptotypes.PubKey, fromAddress string, msgType string,
-	msgParams map[string]interface{},
+	msgParams types.MsgParams,
 ) (response *coretypes.ResultBroadcastTx, txbody string, err error) {
 	encodingConfig := params.MakeTestEncodingConfig()
 	encodingConfig.Codec = cdc
@@ -46,10 +49,14 @@ func SendTransactionViaRPC(config types.Config, rpcEndpoint string, chainID stri
 	transferModule := transfer.AppModuleBasic{}
 	ibcModule := ibc.AppModuleBasic{}
 	bankModule := bank.AppModuleBasic{}
+	wasmModule := wasmd.AppModuleBasic{}
+	govModule := gov.AppModuleBasic{}
 
 	ibcModule.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	transferModule.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	bankModule.RegisterInterfaces(encodingConfig.InterfaceRegistry)
+	wasmModule.RegisterInterfaces(encodingConfig.InterfaceRegistry)
+	govModule.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	std.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 
 	// Create a new TxBuilder.
@@ -66,6 +73,11 @@ func SendTransactionViaRPC(config types.Config, rpcEndpoint string, chainID stri
 		}
 	case "bank_send":
 		msg, memo, err = hardhatbank.CreateBankSendMsg(config, fromAddress, msgParams)
+		if err != nil {
+			return nil, "", err
+		}
+	case "store_code":
+		msg, memo, err = wasm.CreateStoreCodeMsg(config, fromAddress, msgParams)
 		if err != nil {
 			return nil, "", err
 		}

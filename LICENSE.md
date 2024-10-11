@@ -1,4 +1,4 @@
-Hardhat is Somaitc Labs intellectual property.
+# Hardhat is Somaitc Labs intellectual property.
 
 The source code is here for reference and to encurage the rigorous testing of mainnets in the Cosmos ecosystem.  No one will listen if you test testnets.
 
@@ -13,7 +13,8 @@ The Interchain Foundation, and the teams it funds are not allowed to use this so
 * Informal Systems
 * Amulet
 * Interchain GMBH
+* Decentrio
 
-If you are not charging money for the use of this software, you can use it anywhere you would like to, without restriction.
+If you are not charging money for the use of this software, you can use it on production networks to ensure that they live up to the performance claims made by the Interchain Foundation, at no cost.
 
-Notional Labs will allow significant contributors to spammy-go to use it and will always credit contributors
+Somatic Labs will allow all uses of Hardhat by contributors, after a discussion.  We encourage contribution to hardhat as we believe that performance claims need to be proven, and that false performance claims are dangerous.
