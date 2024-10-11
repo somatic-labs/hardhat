@@ -73,13 +73,11 @@ Additional information available at https://github.com/faddat/fasf-report
 
 ## LIMITATIONS
 
-Like any blockchain client software, `hardhat` can only make transactions that are explicitly supported by the chains it is used to test.  It has no magic blackhat powers.  Hardhat makes only valid transactions, and can be used to verify claims about those transaction types.
+Hardhat, like any blockchain client software, is limited to making transactions explicitly supported by the chains it tests. It operates within the bounds of valid transactions and is designed to verify claims about supported transaction types.
 
-A later product called `darkhat` will test other things.  Please note that using `darkhat` is likely illegal in most places in the world, unless you have explicit permission to do so.  `darkhat` should never be used on a production network, where `hardhat` use is fully legal and encouraged.  `darkhat` will focus on the disruption of the p2p layer of networks with actual black hat techniques.
+Hardhat is designed for use on test networks and should be used responsibly. It is not intended for any malicious purposes or for disrupting production networks. Users should always obtain proper authorization before testing on any network they do not own or operate.
 
-I have no idea if `darkhat` will be open source.
-
-If you would like to fund `darkhat` please reach out to [Jacob Gadikian](x.com/gadikian).  We think that `darkhat` will be useful in further proving the security of blockchain networks by helping the teams building them to ensure that they cannot be trivially interrupted.
+For questions about Hardhat's capabilities or to report potential security issues, please contact the project maintainers through the appropriate channels listed in this repository.
 
 
 ## Bonus content
