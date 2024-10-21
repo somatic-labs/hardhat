@@ -81,6 +81,12 @@ func SendTransactionViaRPC(config types.Config, rpcEndpoint string, chainID stri
 		if err != nil {
 			return nil, "", err
 		}
+	case "instantiate_contract":
+		msg, memo, err = wasm.CreateInstantiateContractMsg(config, fromAddress, msgParams)
+		if err != nil {
+			return nil, "", err
+		}
+
 	default:
 		return nil, "", fmt.Errorf("unsupported message type: %s", msgType)
 	}

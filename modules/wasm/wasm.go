@@ -18,7 +18,15 @@ func CreateStoreCodeMsg(config types.Config, sender string, msgParams types.MsgP
 		return nil, "", fmt.Errorf("invalid sender address: %w", err)
 	}
 
-	wasmFile, err := os.ReadFile(msgParams.WasmFile)
+	if config.MsgParams.WasmFile == "" {
+		return nil, "", fmt.Errorf("ConfigWASM file path is empty")
+	}
+
+	if msgParams.WasmFile == "" {
+		return nil, "", fmt.Errorf("WASM file path is empty")
+	}
+
+	wasmFile, err := os.ReadFile(config.MsgParams.WasmFile)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to read WASM file: %w", err)
 	}
@@ -36,15 +44,15 @@ func CreateStoreCodeMsg(config types.Config, sender string, msgParams types.MsgP
 	return &msg, memo, nil
 }
 
-func CreateInstantiateContractMsg(config types.Config, sender string, msgParams types.MsgParams) (sdk.Msg, error) {
+func CreateInstantiateContractMsg(config types.Config, sender string, msgParams types.MsgParams) (sdk.Msg, string, error) {
 	senderAddr, err := sdk.AccAddressFromBech32(sender)
 	if err != nil {
-		return nil, fmt.Errorf("invalid sender address: %w", err)
+		return nil, "", fmt.Errorf("invalid sender address: %w", err)
 	}
 
 	initMsg, err := json.Marshal(msgParams.InitMsg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal init message: %w", err)
+		return nil, "", fmt.Errorf("failed to marshal init message: %w", err)
 	}
 
 	funds := sdk.NewCoins(sdk.NewCoin(config.Denom, sdkmath.NewInt(msgParams.Amount)))
@@ -57,7 +65,13 @@ func CreateInstantiateContractMsg(config types.Config, sender string, msgParams 
 		Msg:    initMsg,
 		Funds:  funds,
 	}
-	return &msg, nil
+
+	memo, err := lib.GenerateRandomStringOfLength(256)
+	if err != nil {
+		return nil, "", fmt.Errorf("error generating random memo: %w", err)
+	}
+
+	return &msg, memo, nil
 }
 
 func CreateExecuteContractMsg(config types.Config, sender string, msgParams types.MsgParams) (sdk.Msg, error) {

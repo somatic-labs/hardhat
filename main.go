@@ -19,7 +19,7 @@ import (
 
 const (
 	BatchSize       = 100000000
-	MaxRetries      = 10
+	MaxRetries      = 1
 	TimeoutDuration = 2 * time.Second
 )
 
@@ -64,6 +64,7 @@ func main() {
 
 		if err != nil {
 			fmt.Printf("%s Error: %v\n", time.Now().Format("15:04:05"), err)
+
 			if strings.Contains(err.Error(), "account sequence mismatch") {
 				parts := strings.Split(err.Error(), "expected ")
 				if len(parts) > 1 {
@@ -74,10 +75,30 @@ func main() {
 							sequence = expectedSeq
 							fmt.Printf("%s Set sequence to expected value %d due to mismatch\n",
 								time.Now().Format("15:04:05"), sequence)
+
+							// Re-send the transaction with the correct sequence
+							currentSequence = sequence
+							sequence++
+							resp, _, err = sendTransactionWithRetry(config, nodeURL, chainID, uint64(currentSequence), uint64(accNum), privKey.(cryptotypes.PrivKey), pubKey.(cryptotypes.PubKey), acctAddress, config.MsgType, msgParams)
+							elapsed = time.Since(start)
+
+							if err != nil {
+								fmt.Printf("%s Error after adjusting sequence: %v\n", time.Now().Format("15:04:05"), err)
+								failedTxns++
+							} else {
+								fmt.Printf("%s Transaction succeeded after adjusting sequence, sequence: %d, time: %v\n",
+									time.Now().Format("15:04:05"), currentSequence, elapsed)
+								successfulTxns++
+								responseCodes[resp.Code]++
+							}
+
+							// Continue to the next iteration
+							continue
 						}
 					}
 				}
 			}
+
 			failedTxns++
 		} else {
 			fmt.Printf("%s Transaction succeeded, sequence: %d, time: %v\n",
