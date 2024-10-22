@@ -62,7 +62,7 @@ func main() {
 		sequence++
 
 		start := time.Now()
-		resp, _, err := sendTransactionWithRetry(
+		resp, err := sendTransactionWithRetry(
 			config,
 			nodeURL,
 			chainID,
@@ -93,7 +93,7 @@ func main() {
 							// Re-send the transaction with the correct sequence
 							currentSequence = sequence
 							sequence++
-							resp, _, err := sendTransactionWithRetry(
+							resp, err := sendTransactionWithRetry(
 								config,
 								nodeURL,
 								chainID,
@@ -143,7 +143,7 @@ func main() {
 	}
 }
 
-func sendTransactionWithRetry(config types.Config, nodeURL, chainID string, sequence, accNum uint64, privKey cryptotypes.PrivKey, pubKey cryptotypes.PubKey, acctAddress, msgType string, msgParams types.MsgParams) (*coretypes.ResultBroadcastTx, string, error) {
+func sendTransactionWithRetry(config types.Config, nodeURL, chainID string, sequence, accNum uint64, privKey cryptotypes.PrivKey, pubKey cryptotypes.PubKey, acctAddress, msgType string, msgParams types.MsgParams) (*coretypes.ResultBroadcastTx, error) {
 	var lastErr error
 	startTime := time.Now()
 	for retry := 0; retry < MaxRetries; retry++ {
@@ -178,7 +178,7 @@ func sendTransactionWithRetry(config types.Config, nodeURL, chainID string, sequ
 
 		select {
 		case resp := <-respChan:
-			return resp, "", nil
+			return resp, nil
 		case err := <-errChan:
 			lastErr = err
 		case <-ctx.Done():
@@ -189,12 +189,12 @@ func sendTransactionWithRetry(config types.Config, nodeURL, chainID string, sequ
 		fmt.Printf("%s Retry %d failed after %v: %v\n", time.Now().Format("15:04:05"), retry, attemptDuration, lastErr)
 
 		if time.Since(startTime) > 2*time.Second {
-			return nil, "", fmt.Errorf("total retry time exceeded 1 second")
+			return nil, fmt.Errorf("total retry time exceeded 1 second")
 		}
 
 		time.Sleep(TimeoutDuration)
 	}
 
 	totalDuration := time.Since(startTime)
-	return nil, "", fmt.Errorf("failed after %d retries in %v: %v", MaxRetries, totalDuration, lastErr)
+	return nil, fmt.Errorf("failed after %d retries in %v: %v", MaxRetries, totalDuration, lastErr)
 }
