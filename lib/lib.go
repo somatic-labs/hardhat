@@ -14,8 +14,9 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/somatic-labs/hardhat/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var client = &http.Client{
@@ -143,7 +144,7 @@ func GenerateRandomStringOfLength(n int) (string, error) {
 	return string(b), nil
 }
 
-func GenerateRandomAccount(prefix string) (sdk.AccAddress, error) {
+func GenerateRandomAccount() (sdk.AccAddress, error) {
 	// Generate 20 random bytes
 	randomBytes := make([]byte, 20)
 	_, err := rand.Read(randomBytes)

@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"strings"
 
-	sdkmath "cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	lib "github.com/somatic-labs/hardhat/lib"
 	types "github.com/somatic-labs/hardhat/types"
+
+	sdkmath "cosmossdk.io/math"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func CreateIBCTransferMsg(config types.Config, fromAddress string, msgParams types.MsgParams) (sdk.Msg, string, error) {

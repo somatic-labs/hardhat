@@ -3,10 +3,11 @@ package client
 import (
 	"context"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	tx "github.com/cosmos/cosmos-sdk/types/tx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	tx "github.com/cosmos/cosmos-sdk/types/tx"
 )
 
 type GRPCClient struct {
@@ -15,7 +16,7 @@ type GRPCClient struct {
 }
 
 func NewGRPCClient(grpcEndpoint string) (*GRPCClient, error) {
-	conn, err := grpc.Dial(grpcEndpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(grpcEndpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}

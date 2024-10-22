@@ -3,10 +3,11 @@ package lib
 import (
 	"fmt"
 
+	types "github.com/somatic-labs/hardhat/types"
+
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	types "github.com/somatic-labs/hardhat/types"
 )
 
 func GetPrivKey(config types.Config, mnemonic []byte) (cryptotypes.PrivKey, cryptotypes.PubKey, string) {

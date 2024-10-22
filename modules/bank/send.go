@@ -3,11 +3,13 @@ package bank
 import (
 	"fmt"
 
-	sdkmath "cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/somatic-labs/hardhat/lib"
 	types "github.com/somatic-labs/hardhat/types"
+
+	sdkmath "cosmossdk.io/math"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 func CreateBankSendMsg(config types.Config, fromAddress string, msgParams types.MsgParams) (sdk.Msg, string, error) {
@@ -19,7 +21,7 @@ func CreateBankSendMsg(config types.Config, fromAddress string, msgParams types.
 	toAccAddress, err := sdk.AccAddressFromBech32(msgParams.ToAddress)
 	if err != nil {
 		fmt.Println("invalid to address, spamming random new accounts")
-		toAccAddress, err = lib.GenerateRandomAccount(config.Prefix)
+		toAccAddress, err = lib.GenerateRandomAccount()
 		if err != nil {
 			return nil, "", fmt.Errorf("error generating random account: %w", err)
 		}

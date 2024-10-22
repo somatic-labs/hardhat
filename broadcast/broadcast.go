@@ -5,11 +5,20 @@ import (
 	"fmt"
 	"log"
 
-	sdkmath "cosmossdk.io/math"
-	wasmd "github.com/CosmWasm/wasmd/x/wasm"
 	cometrpc "github.com/cometbft/cometbft/rpc/client/http"
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	tmtypes "github.com/cometbft/cometbft/types"
+	"github.com/cosmos/ibc-go/modules/apps/callbacks/testing/simapp/params"
+	"github.com/cosmos/ibc-go/v8/modules/apps/transfer"
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	ibc "github.com/cosmos/ibc-go/v8/modules/core"
+	hardhatbank "github.com/somatic-labs/hardhat/modules/bank"
+	hardhatibc "github.com/somatic-labs/hardhat/modules/ibc"
+	wasm "github.com/somatic-labs/hardhat/modules/wasm"
+	types "github.com/somatic-labs/hardhat/types"
+
+	sdkmath "cosmossdk.io/math"
+
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -21,14 +30,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/gov"
-	"github.com/cosmos/ibc-go/modules/apps/callbacks/testing/simapp/params"
-	"github.com/cosmos/ibc-go/v8/modules/apps/transfer"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	ibc "github.com/cosmos/ibc-go/v8/modules/core"
-	hardhatbank "github.com/somatic-labs/hardhat/modules/bank"
-	hardhatibc "github.com/somatic-labs/hardhat/modules/ibc"
-	wasm "github.com/somatic-labs/hardhat/modules/wasm"
-	types "github.com/somatic-labs/hardhat/types"
+
+	wasmd "github.com/CosmWasm/wasmd/x/wasm"
 )
 
 var cdc = codec.NewProtoCodec(codectypes.NewInterfaceRegistry())
@@ -38,8 +41,8 @@ func init() {
 	banktypes.RegisterInterfaces(cdc.InterfaceRegistry())
 }
 
-func SendTransactionViaRPC(config types.Config, rpcEndpoint string, chainID string, sequence, accnum uint64,
-	privKey cryptotypes.PrivKey, pubKey cryptotypes.PubKey, fromAddress string, msgType string,
+func SendTransactionViaRPC(config types.Config, rpcEndpoint, chainID string, sequence, accnum uint64,
+	privKey cryptotypes.PrivKey, pubKey cryptotypes.PubKey, fromAddress, msgType string,
 	msgParams types.MsgParams,
 ) (response *coretypes.ResultBroadcastTx, txbody string, err error) {
 	encodingConfig := params.MakeTestEncodingConfig()

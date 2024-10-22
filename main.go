@@ -11,10 +11,11 @@ import (
 
 	"github.com/BurntSushi/toml"
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/somatic-labs/hardhat/broadcast"
 	"github.com/somatic-labs/hardhat/lib"
 	"github.com/somatic-labs/hardhat/types"
+
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 )
 
 const (
