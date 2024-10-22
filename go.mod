@@ -1,6 +1,5 @@
 module github.com/somatic-labs/hardhat
 
-// you really really need to use go 1.20.  There is a small change which affects the governance module, and is hard to get your head around.
 go 1.23.1
 
 replace github.com/cosmos/cosmos-sdk => github.com/faddat/basecoin v0.0.0-20241004182125-2b3e8f61430f
