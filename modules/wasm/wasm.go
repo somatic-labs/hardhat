@@ -2,6 +2,7 @@ package wasm
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 
@@ -18,20 +19,20 @@ import (
 func CreateStoreCodeMsg(config types.Config, sender string, msgParams types.MsgParams) (sdk.Msg, string, error) {
 	senderAddr, err := sdk.AccAddressFromBech32(sender)
 	if err != nil {
-		return nil, "", fmt.Errorf("invalid sender address: %w", err)
+		return nil, "", errors.New("invalid sender address: " + err.Error())
 	}
 
 	if config.MsgParams.WasmFile == "" {
-		return nil, "", fmt.Errorf("ConfigWASM file path is empty")
+		return nil, "", errors.New("ConfigWASM file path is empty")
 	}
 
 	if msgParams.WasmFile == "" {
-		return nil, "", fmt.Errorf("WASM file path is empty")
+		return nil, "", errors.New("WASM file path is empty")
 	}
 
 	wasmFile, err := os.ReadFile(config.MsgParams.WasmFile)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to read WASM file: %w", err)
+		return nil, "", errors.New("failed to read WASM file: " + err.Error())
 	}
 
 	msg := wasmtypes.MsgStoreCode{

@@ -34,7 +34,7 @@ linters:
     - tenv
     - typecheck
     - tagalign
-    - tagliatelle
+    #    - tagliatelle
     - thelper # too many positives with table tests that have custom setup(*testing.T)
     - testifylint
     - perfsprint #

@@ -5,7 +5,7 @@ channel = "channel-1"
 denom = "uom"
 prefix = "mantra"
 gas_per_byte = 100
-base_gas = 300000
+base_gas = 41772713
 ibc_memo = "Contract store spam test"
 memo = "Storing compiled contract with randomized memo"
 ibc_memo_repeat = 10
@@ -36,8 +36,8 @@ label = "statefilestore"
 #amount = 1000
 
 [gas]
-low = 100
-precision = 2
+low = 25
+precision = 3
 
 [nodes]
 rpc = ["http://127.0.0.1:26657"]

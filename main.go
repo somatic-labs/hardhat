@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -63,75 +64,61 @@ func main() {
 		sequence++
 
 		start := time.Now()
-		resp, err := sendTransactionWithRetry(
-			config,
-			nodeURL,
-			chainID,
-			uint64(currentSequence),
-			uint64(accNum),
-			privKey, // Remove .(cryptotypes.PrivKey)
-			pubKey,  // Remove .(cryptotypes.PubKey)
-			acctAddress,
-			config.MsgType,
-			msgParams,
-		)
+		resp, err := sendTransaction(config, nodeURL, chainID, uint64(currentSequence), uint64(accNum), privKey, pubKey, acctAddress, msgParams)
 		elapsed := time.Since(start)
 
-		if err != nil {
-			fmt.Printf("%s Error: %v\n", time.Now().Format("15:04:05"), err)
-
-			if strings.Contains(err.Error(), "account sequence mismatch") {
-				parts := strings.Split(err.Error(), "expected ")
-				if len(parts) > 1 {
-					expectedSeqParts := strings.Split(parts[1], ",")
-					if len(expectedSeqParts) > 0 {
-						expectedSeq, parseErr := strconv.ParseInt(expectedSeqParts[0], 10, 64)
-						if parseErr == nil {
-							sequence = expectedSeq
-							fmt.Printf("%s Set sequence to expected value %d due to mismatch\n",
-								time.Now().Format("15:04:05"), sequence)
-
-							// Re-send the transaction with the correct sequence
-							currentSequence = sequence
-							sequence++
-							resp, err := sendTransactionWithRetry(
-								config,
-								nodeURL,
-								chainID,
-								uint64(currentSequence),
-								uint64(accNum),
-								privKey, // Remove .(cryptotypes.PrivKey)
-								pubKey,  // Remove .(cryptotypes.PubKey)
-								acctAddress,
-								config.MsgType,
-								msgParams,
-							)
-							elapsed = time.Since(start)
-
-							if err != nil {
-								fmt.Printf("%s Error after adjusting sequence: %v\n", time.Now().Format("15:04:05"), err)
-								failedTxns++
-							} else {
-								fmt.Printf("%s Transaction succeeded after adjusting sequence, sequence: %d, time: %v\n",
-									time.Now().Format("15:04:05"), currentSequence, elapsed)
-								successfulTxns++
-								responseCodes[resp.Code]++
-							}
-
-							// Continue to the next iteration
-							continue
-						}
-					}
-				}
-			}
-
-			failedTxns++
-		} else {
+		if err == nil {
 			fmt.Printf("%s Transaction succeeded, sequence: %d, time: %v\n",
 				time.Now().Format("15:04:05"), currentSequence, elapsed)
 			successfulTxns++
 			responseCodes[resp.Code]++
+			continue
 		}
+
+		fmt.Printf("%s Error: %v\n", time.Now().Format("15:04:05"), err)
+
+		if !strings.Contains(err.Error(), "account sequence mismatch") {
+			failedTxns++
+			continue
+		}
+
+		parts := strings.Split(err.Error(), "expected ")
+		if len(parts) <= 1 {
+			failedTxns++
+			continue
+		}
+
+		expectedSeqParts := strings.Split(parts[1], ",")
+		if len(expectedSeqParts) == 0 {
+			failedTxns++
+			continue
+		}
+
+		expectedSeq, parseErr := strconv.ParseInt(expectedSeqParts[0], 10, 64)
+		if parseErr != nil {
+			failedTxns++
+			continue
+		}
+
+		sequence = expectedSeq
+		fmt.Printf("%s Set sequence to expected value %d due to mismatch\n",
+			time.Now().Format("15:04:05"), sequence)
+
+		// Re-send the transaction with the correct sequence
+		start = time.Now()
+		resp, err = sendTransaction(config, nodeURL, chainID, uint64(sequence), uint64(accNum), privKey, pubKey, acctAddress, msgParams)
+		elapsed = time.Since(start)
+
+		if err != nil {
+			fmt.Printf("%s Error after adjusting sequence: %v\n", time.Now().Format("15:04:05"), err)
+			failedTxns++
+			continue
+		}
+
+		fmt.Printf("%s Transaction succeeded after adjusting sequence, sequence: %d, time: %v\n",
+			time.Now().Format("15:04:05"), currentSequence, elapsed)
+		successfulTxns++
+		responseCodes[resp.Code]++
 	}
 
 	fmt.Println("Successful transactions:", successfulTxns)
@@ -142,6 +129,22 @@ func main() {
 		percentage := float64(count) / float64(totalTxns) * 100
 		fmt.Printf("Code %d: %d (%.2f%%)\n", code, count, percentage)
 	}
+}
+
+// New helper function to send transaction
+func sendTransaction(config types.Config, nodeURL, chainID string, currentSequence, accNum uint64, privKey cryptotypes.PrivKey, pubKey cryptotypes.PubKey, acctAddress string, msgParams types.MsgParams) (*coretypes.ResultBroadcastTx, error) {
+	return sendTransactionWithRetry(
+		config,
+		nodeURL,
+		chainID,
+		currentSequence,
+		accNum,
+		privKey, // Remove .(cryptotypes.PrivKey)
+		pubKey,  // Remove .(cryptotypes.PubKey)
+		acctAddress,
+		config.MsgType,
+		msgParams,
+	)
 }
 
 func sendTransactionWithRetry(config types.Config, nodeURL, chainID string, sequence, accNum uint64, privKey cryptotypes.PrivKey, pubKey cryptotypes.PubKey, acctAddress, msgType string, msgParams types.MsgParams) (*coretypes.ResultBroadcastTx, error) {
@@ -190,7 +193,7 @@ func sendTransactionWithRetry(config types.Config, nodeURL, chainID string, sequ
 		fmt.Printf("%s Retry %d failed after %v: %v\n", time.Now().Format("15:04:05"), retry, attemptDuration, lastErr)
 
 		if time.Since(startTime) > 2*time.Second {
-			return nil, fmt.Errorf("total retry time exceeded 1 second")
+			return nil, errors.New("total retry time exceeded 2 seconds")
 		}
 
 		time.Sleep(TimeoutDuration)
