@@ -138,9 +138,16 @@ type Config struct {
 }
 
 type MsgParams struct {
-	Amount    int64  `toml:"amount"`
-	Receiver  string `toml:"receiver"`
-	ToAddress string `toml:"to_address"`
+	Amount       int64  `toml:"amount"`
+	Receiver     string `toml:"receiver"`
+	ToAddress    string `toml:"to_address"`
+	WasmFile     string `toml:"wasm_file"`
+	CodeID       uint64 `toml:"code_id"`
+	InitMsg      string `toml:"init_msg"`
+	ContractAddr string `toml:"contract_addr"`
+	ExecMsg      string `toml:"exec_msg"`
+	Label        string `toml:"label"`
+
 	// Add other message-specific parameters as needed
 }
 
