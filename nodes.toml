@@ -5,7 +5,7 @@ channel = "channel-1"
 denom = "uom"
 prefix = "mantra"
 gas_per_byte = 100
-base_gas = 130000
+base_gas = 300000
 ibc_memo = "Contract store spam test"
 memo = "Storing compiled contract with randomized memo"
 ibc_memo_repeat = 10
@@ -18,10 +18,9 @@ slip44 = 118
 msg_type = "bank_send"
 
 [msg_params]
-to_address = "mantra1uqrar205hjv4s8832kwj8e6xhwvk4x0eqml043"
 
-
-
+# if this field is left blank as "", hardhat will send to random accounts endlessly
+to_address = ""
 
 
 #[msg_params]
@@ -42,4 +41,4 @@ precision = 2
 
 [nodes]
 rpc = ["http://127.0.0.1:26657"]
-api = "https://api.dukong.mantrachain.dev:443"
+api = "https://api.canary.mantrachain.dev:443"

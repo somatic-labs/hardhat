@@ -41,6 +41,9 @@ func main() {
 	}
 	nodeURL := nodes[0] // Use only the first node
 
+	if nodeURL == "" {
+		log.Fatal("Node URL is empty. Please verify the nodes configuration.")
+	}
 	chainID, err := lib.GetChainID(nodeURL)
 	if err != nil {
 		log.Fatalf("Failed to get chain ID: %v", err)
@@ -59,7 +62,18 @@ func main() {
 		sequence++
 
 		start := time.Now()
-		resp, _, err := sendTransactionWithRetry(config, nodeURL, chainID, uint64(currentSequence), uint64(accNum), privKey.(cryptotypes.PrivKey), pubKey.(cryptotypes.PubKey), acctAddress, config.MsgType, msgParams)
+		resp, _, err := sendTransactionWithRetry(
+			config,
+			nodeURL,
+			chainID,
+			uint64(currentSequence),
+			uint64(accNum),
+			privKey, // Remove .(cryptotypes.PrivKey)
+			pubKey,  // Remove .(cryptotypes.PubKey)
+			acctAddress,
+			config.MsgType,
+			msgParams,
+		)
 		elapsed := time.Since(start)
 
 		if err != nil {
@@ -79,7 +93,18 @@ func main() {
 							// Re-send the transaction with the correct sequence
 							currentSequence = sequence
 							sequence++
-							resp, _, err = sendTransactionWithRetry(config, nodeURL, chainID, uint64(currentSequence), uint64(accNum), privKey.(cryptotypes.PrivKey), pubKey.(cryptotypes.PubKey), acctAddress, config.MsgType, msgParams)
+							resp, _, err := sendTransactionWithRetry(
+								config,
+								nodeURL,
+								chainID,
+								uint64(currentSequence),
+								uint64(accNum),
+								privKey, // Remove .(cryptotypes.PrivKey)
+								pubKey,  // Remove .(cryptotypes.PubKey)
+								acctAddress,
+								config.MsgType,
+								msgParams,
+							)
 							elapsed = time.Since(start)
 
 							if err != nil {
