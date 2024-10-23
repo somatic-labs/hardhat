@@ -1,5 +1,8 @@
 # Hardhat
 
+![image](https://github.com/user-attachments/assets/baa314c4-4e78-4ca5-ba8c-96380ec49bd1)
+
+
 ## Overview
 
 Hardhat is a powerful tool designed to empower users to test and validate the performance and security claims of Cosmos-based blockchains. By providing an easy-to-use testing suite, Hardhat enables advanced users to ensure that the blockchains they depend on are robust, secure, and capable of handling real-world conditions.
