@@ -48,9 +48,6 @@ func main() {
 
 	msgParams := config.MsgParams
 
-	successfulTxns, failedTxns := 0, 0
-	responseCodes := make(map[uint32]int)
-
 	// Get the account info
 	_, accNum := lib.GetAccountInfo(acctAddress, config)
 	if err != nil {
@@ -59,26 +56,55 @@ func main() {
 
 	sequence := uint64(1) // Start from sequence number 1
 
-	//main loop
-	for i := 0; i < BatchSize; i++ {
+	// Create a TransactionParams struct
+	txParams := types.TransactionParams{
+		Config:      config,
+		NodeURL:     nodeURL,
+		ChainID:     chainID,
+		Sequence:    sequence,
+		AccNum:      accNum,
+		PrivKey:     privKey,
+		PubKey:      pubKey,
+		AcctAddress: acctAddress,
+		MsgType:     config.MsgType,
+		MsgParams:   msgParams,
+	}
+
+	// Call the broadcast loop
+	successfulTxns, failedTxns, responseCodes, _ := broadcastLoop(txParams, BatchSize)
+
+	// After the loop
+	fmt.Println("Successful transactions:", successfulTxns)
+	fmt.Println("Failed transactions:", failedTxns)
+	totalTxns := successfulTxns + failedTxns
+	fmt.Println("Response code breakdown:")
+	for code, count := range responseCodes {
+		percentage := float64(count) / float64(totalTxns) * 100
+		fmt.Printf("Code %d: %d (%.2f%%)\n", code, count, percentage)
+	}
+}
+
+// broadcastLoop handles the main transaction broadcasting logic
+func broadcastLoop(
+	txParams types.TransactionParams,
+	batchSize int,
+) (successfulTxns, failedTxns int, responseCodes map[uint32]int, updatedSequence uint64) {
+	successfulTxns = 0
+	failedTxns = 0
+	responseCodes = make(map[uint32]int)
+	sequence := txParams.Sequence
+
+	for i := 0; i < batchSize; i++ {
 		currentSequence := sequence
 
 		fmt.Println("FROM LOOP, currentSequence", currentSequence)
-		fmt.Println("FROM LOOP, accNum", accNum)
-		fmt.Println("FROM LOOP, chainID", chainID)
+		fmt.Println("FROM LOOP, accNum", txParams.AccNum)
+		fmt.Println("FROM LOOP, chainID", txParams.ChainID)
 
 		start := time.Now()
 		resp, _, err := broadcast.SendTransactionViaRPC(
-			config,
-			nodeURL,
-			chainID,
+			txParams,
 			currentSequence,
-			accNum,
-			privKey,
-			pubKey,
-			acctAddress,
-			config.MsgType,
-			msgParams,
 		)
 		elapsed := time.Since(start)
 
@@ -95,7 +121,6 @@ func main() {
 		}
 
 		fmt.Printf("%s Error: %v\n", time.Now().Format("15:04:05.000"), err)
-
 		fmt.Println("FROM MAIN, resp.Code", resp.Code)
 
 		if resp.Code == 32 {
@@ -114,16 +139,8 @@ func main() {
 			// Re-send the transaction with the correct sequence
 			start = time.Now()
 			resp, _, err = broadcast.SendTransactionViaRPC(
-				config,
-				nodeURL,
-				chainID,
+				txParams,
 				sequence,
-				accNum,
-				privKey,
-				pubKey,
-				acctAddress,
-				config.MsgType,
-				msgParams,
 			)
 			elapsed = time.Since(start)
 
@@ -139,19 +156,12 @@ func main() {
 			responseCodes[resp.Code]++
 			sequence++ // Increment sequence for next transaction
 			continue
-		} else {
-			failedTxns++
 		}
-	}
+		failedTxns++
 
-	fmt.Println("Successful transactions:", successfulTxns)
-	fmt.Println("Failed transactions:", failedTxns)
-	totalTxns := successfulTxns + failedTxns
-	fmt.Println("Response code breakdown:")
-	for code, count := range responseCodes {
-		percentage := float64(count) / float64(totalTxns) * 100
-		fmt.Printf("Code %d: %d (%.2f%%)\n", code, count, percentage)
 	}
+	updatedSequence = sequence
+	return successfulTxns, failedTxns, responseCodes, updatedSequence
 }
 
 // Function to extract the expected sequence number from the error message

@@ -22,7 +22,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/std"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
@@ -41,10 +40,8 @@ func init() {
 	banktypes.RegisterInterfaces(cdc.InterfaceRegistry())
 }
 
-func SendTransactionViaRPC(config types.Config, rpcEndpoint, chainID string, sequence, accnum uint64,
-	privKey cryptotypes.PrivKey, pubKey cryptotypes.PubKey, fromAddress, msgType string,
-	msgParams types.MsgParams,
-) (response *coretypes.ResultBroadcastTx, txbody string, err error) {
+// SendTransactionViaRPC sends a transaction using the provided TransactionParams and sequence number.
+func SendTransactionViaRPC(txParams types.TransactionParams, sequence uint64) (response *coretypes.ResultBroadcastTx, txbody string, err error) {
 	encodingConfig := params.MakeTestEncodingConfig()
 	encodingConfig.Codec = cdc
 
@@ -68,30 +65,29 @@ func SendTransactionViaRPC(config types.Config, rpcEndpoint, chainID string, seq
 	var msg sdk.Msg
 	var memo string // Declare a variable to hold the memo
 
-	switch msgType {
+	switch txParams.MsgType {
 	case "ibc_transfer":
-		msg, memo, err = meteoriteibc.CreateIBCTransferMsg(config, fromAddress, msgParams)
+		msg, memo, err = meteoriteibc.CreateIBCTransferMsg(txParams.Config, txParams.AcctAddress, txParams.MsgParams)
 		if err != nil {
 			return nil, "", err
 		}
 	case "bank_send":
-		msg, memo, err = meteoritebank.CreateBankSendMsg(config, fromAddress, msgParams)
+		msg, memo, err = meteoritebank.CreateBankSendMsg(txParams.Config, txParams.AcctAddress, txParams.MsgParams)
 		if err != nil {
 			return nil, "", err
 		}
 	case "store_code":
-		msg, memo, err = wasm.CreateStoreCodeMsg(config, fromAddress, msgParams)
+		msg, memo, err = wasm.CreateStoreCodeMsg(txParams.Config, txParams.AcctAddress, txParams.MsgParams)
 		if err != nil {
 			return nil, "", err
 		}
 	case "instantiate_contract":
-		msg, memo, err = wasm.CreateInstantiateContractMsg(config, fromAddress, msgParams)
+		msg, memo, err = wasm.CreateInstantiateContractMsg(txParams.Config, txParams.AcctAddress, txParams.MsgParams)
 		if err != nil {
 			return nil, "", err
 		}
-
 	default:
-		return nil, "", fmt.Errorf("unsupported message type: %s", msgType)
+		return nil, "", fmt.Errorf("unsupported message type: %s", txParams.MsgType)
 	}
 
 	// Set messages
@@ -102,22 +98,22 @@ func SendTransactionViaRPC(config types.Config, rpcEndpoint, chainID string, seq
 
 	// Estimate gas limit based on transaction size
 	txSize := len(msg.String())
-	gasLimit := uint64((int64(txSize) * config.Bytes) + config.BaseGas)
+	gasLimit := uint64((int64(txSize) * txParams.Config.Bytes) + txParams.Config.BaseGas)
 	txBuilder.SetGasLimit(gasLimit)
 
 	// Calculate fee based on gas limit and a fixed gas price
-	gasPrice := sdk.NewDecCoinFromDec(config.Denom, sdkmath.LegacyNewDecWithPrec(config.Gas.Low, config.Gas.Precision))
+	gasPrice := sdk.NewDecCoinFromDec(txParams.Config.Denom, sdkmath.LegacyNewDecWithPrec(txParams.Config.Gas.Low, txParams.Config.Gas.Precision))
 	feeAmount := gasPrice.Amount.MulInt64(int64(gasLimit)).RoundInt()
-	feecoin := sdk.NewCoin(config.Denom, feeAmount)
+	feecoin := sdk.NewCoin(txParams.Config.Denom, feeAmount)
 	txBuilder.SetFeeAmount(sdk.NewCoins(feecoin))
 
 	// Set the memo (either random for bank_send or as per IBC transfer)
 	txBuilder.SetMemo(memo)
 	txBuilder.SetTimeoutHeight(0)
 
-	// First round: we gather all the signer infos. We use the "set empty signature" hack to do that.
+	// First round: gather all the signer infos using the "set empty signature" hack
 	sigV2 := signing.SignatureV2{
-		PubKey:   pubKey,
+		PubKey:   txParams.PubKey,
 		Sequence: sequence,
 		Data: &signing.SingleSignatureData{
 			SignMode: signing.SignMode(encodingConfig.TxConfig.SignModeHandler().DefaultMode()),
@@ -126,23 +122,29 @@ func SendTransactionViaRPC(config types.Config, rpcEndpoint, chainID string, seq
 
 	err = txBuilder.SetSignatures(sigV2)
 	if err != nil {
-		fmt.Println("error setting signatures")
+		fmt.Println("Error setting signatures")
 		return nil, "", err
 	}
 
 	signerData := authsigning.SignerData{
-		ChainID:       chainID,
-		AccountNumber: accnum,
+		ChainID:       txParams.ChainID,
+		AccountNumber: txParams.AccNum,
 		Sequence:      sequence,
 	}
 
 	ctx := context.Background()
 
-	signed, err := tx.SignWithPrivKey(ctx,
-		signing.SignMode(encodingConfig.TxConfig.SignModeHandler().DefaultMode()), signerData,
-		txBuilder, privKey, encodingConfig.TxConfig, sequence)
+	signed, err := tx.SignWithPrivKey(
+		ctx,
+		signing.SignMode(encodingConfig.TxConfig.SignModeHandler().DefaultMode()),
+		signerData,
+		txBuilder,
+		txParams.PrivKey,
+		encodingConfig.TxConfig,
+		sequence,
+	)
 	if err != nil {
-		fmt.Println("couldn't sign")
+		fmt.Println("Couldn't sign")
 		return nil, "", err
 	}
 
@@ -151,21 +153,22 @@ func SendTransactionViaRPC(config types.Config, rpcEndpoint, chainID string, seq
 		return nil, "", err
 	}
 
-	// Generate a JSON string.
-	txJSONBytes, err := encodingConfig.TxConfig.TxEncoder()(txBuilder.GetTx())
+	// Generate the encoded transaction bytes
+	txBytes, err := encodingConfig.TxConfig.TxEncoder()(txBuilder.GetTx())
 	if err != nil {
 		fmt.Println(err)
 		return nil, "", err
 	}
 
-	resp, err := Transaction(txJSONBytes, rpcEndpoint)
+	resp, err := Transaction(txBytes, txParams.NodeURL)
 	if err != nil {
-		return resp, string(txJSONBytes), fmt.Errorf("failed to broadcast transaction: %w", err)
+		return resp, string(txBytes), fmt.Errorf("failed to broadcast transaction: %w", err)
 	}
 
-	return resp, string(txJSONBytes), nil
+	return resp, string(txBytes), nil
 }
 
+// Transaction broadcasts the transaction bytes to the given RPC endpoint.
 func Transaction(txBytes []byte, rpcEndpoint string) (*coretypes.ResultBroadcastTx, error) {
 	cmtCli, err := cometrpc.New(rpcEndpoint, "/websocket")
 	if err != nil {
