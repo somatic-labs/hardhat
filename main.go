@@ -59,6 +59,7 @@ func main() {
 
 	sequence := uint64(1) // Start from sequence number 1
 
+	//main loop
 	for i := 0; i < BatchSize; i++ {
 		currentSequence := sequence
 
