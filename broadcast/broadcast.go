@@ -12,8 +12,8 @@ import (
 	"github.com/cosmos/ibc-go/v8/modules/apps/transfer"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v8/modules/core"
-	hardhatbank "github.com/somatic-labs/meteorite/modules/bank"
-	hardhatibc "github.com/somatic-labs/meteorite/modules/ibc"
+	meteoritebank "github.com/somatic-labs/meteorite/modules/bank"
+	meteoriteibc "github.com/somatic-labs/meteorite/modules/ibc"
 	wasm "github.com/somatic-labs/meteorite/modules/wasm"
 	types "github.com/somatic-labs/meteorite/types"
 
@@ -70,12 +70,12 @@ func SendTransactionViaRPC(config types.Config, rpcEndpoint, chainID string, seq
 
 	switch msgType {
 	case "ibc_transfer":
-		msg, memo, err = hardhatibc.CreateIBCTransferMsg(config, fromAddress, msgParams)
+		msg, memo, err = meteoriteibc.CreateIBCTransferMsg(config, fromAddress, msgParams)
 		if err != nil {
 			return nil, "", err
 		}
 	case "bank_send":
-		msg, memo, err = hardhatbank.CreateBankSendMsg(config, fromAddress, msgParams)
+		msg, memo, err = meteoritebank.CreateBankSendMsg(config, fromAddress, msgParams)
 		if err != nil {
 			return nil, "", err
 		}

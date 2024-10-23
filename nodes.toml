@@ -19,12 +19,12 @@ msg_type = "bank_send"
 
 [msg_params]
 
-# if this field is left blank as "", hardhat will send to random accounts endlessly
+# if this field is left blank as "", meteorite will send to random accounts endlessly
 to_address = ""
 
 
 #[msg_params]
-wasm_file = "/Users/faddat/hardhat/target/wasm32-unknown-unknown/release/statefilestore.wasm"
+wasm_file = "/Users/faddat/meteorite/target/wasm32-unknown-unknown/release/statefilestore.wasm"
 label = "statefilestore"
 
 #msg_type = "instantiate_contract"
