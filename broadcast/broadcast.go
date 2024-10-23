@@ -12,10 +12,10 @@ import (
 	"github.com/cosmos/ibc-go/v8/modules/apps/transfer"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v8/modules/core"
-	hardhatbank "github.com/somatic-labs/hardhat/modules/bank"
-	hardhatibc "github.com/somatic-labs/hardhat/modules/ibc"
-	wasm "github.com/somatic-labs/hardhat/modules/wasm"
-	types "github.com/somatic-labs/hardhat/types"
+	hardhatbank "github.com/somatic-labs/meteorite/modules/bank"
+	hardhatibc "github.com/somatic-labs/meteorite/modules/ibc"
+	wasm "github.com/somatic-labs/meteorite/modules/wasm"
+	types "github.com/somatic-labs/meteorite/types"
 
 	sdkmath "cosmossdk.io/math"
 

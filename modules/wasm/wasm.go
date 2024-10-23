@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/somatic-labs/hardhat/lib"
-	types "github.com/somatic-labs/hardhat/types"
+	"github.com/somatic-labs/meteorite/lib"
+	types "github.com/somatic-labs/meteorite/types"
 
 	sdkmath "cosmossdk.io/math"
 

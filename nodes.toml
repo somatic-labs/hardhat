@@ -15,7 +15,7 @@ revision_number = 4
 timeout_height = 21720608
 slip44 = 118
 
-msg_type = "store_code"
+msg_type = "bank_send"
 
 [msg_params]
 

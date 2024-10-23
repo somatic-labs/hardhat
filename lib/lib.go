@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
-	"github.com/somatic-labs/hardhat/types"
+	"github.com/somatic-labs/meteorite/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -29,7 +29,7 @@ var client = &http.Client{
 	},
 }
 
-func GetInitialSequence(address string, config types.Config) (int64, int64) {
+func GetAccountInfo(address string, config types.Config) (uint64, uint64) {
 	resp, err := HTTPGet(config.Nodes.API + "/cosmos/auth/v1beta1/accounts/" + address)
 	if err != nil {
 		log.Printf("Failed to get initial sequence: %v", err)
@@ -55,7 +55,7 @@ func GetInitialSequence(address string, config types.Config) (int64, int64) {
 		return 0, 0
 	}
 
-	return seqint, accnum
+	return uint64(seqint), uint64(accnum)
 }
 
 func GetChainID(nodeURL string) (string, error) {
