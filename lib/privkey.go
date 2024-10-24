@@ -3,7 +3,7 @@ package lib
 import (
 	"fmt"
 
-	types "github.com/somatic-labs/hardhat/types"
+	types "github.com/somatic-labs/meteorite/types"
 
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"

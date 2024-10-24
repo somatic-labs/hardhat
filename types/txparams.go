@@ -1,20 +1,18 @@
 package types
 
 import (
-	"go/types"
-
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 )
 
 type TransactionParams struct {
-	Config      types.Config
+	Config      Config
 	NodeURL     string
 	ChainID     string
-	Sequence    uint64
+	Sequence    uint64 // Optional, can be managed separately
 	AccNum      uint64
 	PrivKey     cryptotypes.PrivKey
 	PubKey      cryptotypes.PubKey
 	AcctAddress string
 	MsgType     string
-	MsgParams   map[string]interface{}
+	MsgParams   MsgParams
 }

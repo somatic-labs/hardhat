@@ -1,4 +1,4 @@
-module github.com/somatic-labs/hardhat
+module github.com/somatic-labs/meteorite
 
 go 1.23.1
 

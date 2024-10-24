@@ -7,8 +7,8 @@ import (
 
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	lib "github.com/somatic-labs/hardhat/lib"
-	types "github.com/somatic-labs/hardhat/types"
+	lib "github.com/somatic-labs/meteorite/lib"
+	types "github.com/somatic-labs/meteorite/types"
 
 	sdkmath "cosmossdk.io/math"
 

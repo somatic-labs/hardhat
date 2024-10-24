@@ -1,8 +1,8 @@
-# Hardhat is Somaitc Labs intellectual property.
+# meteorite is Somaitc Labs intellectual property.
 
 The source code is here for reference and to encurage the rigorous testing of mainnets in the Cosmos ecosystem.  No one will listen if you test testnets.
 
-hardhat is licensed to Somatic Labs for its exclusive use.
+meteorite is licensed to Somatic Labs for its exclusive use.
 
 Only Somatic is allowed to charge money for the use of this softweare.
 
@@ -17,4 +17,4 @@ The Interchain Foundation, and the teams it funds are not allowed to use this so
 
 If you are not charging money for the use of this software, you can use it on production networks to ensure that they live up to the performance claims made by the Interchain Foundation, at no cost.
 
-Somatic Labs will allow all uses of Hardhat by contributors, after a discussion.  We encourage contribution to hardhat as we believe that performance claims need to be proven, and that false performance claims are dangerous.
+Somatic Labs will allow all uses of meteorite by contributors, after a discussion.  We encourage contribution to meteorite as we believe that performance claims need to be proven, and that false performance claims are dangerous.
