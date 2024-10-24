@@ -70,6 +70,13 @@ func main() {
 		MsgParams:   msgParams,
 	}
 
+	//	ctx := context.Background()
+
+	//	_, err := client.NewGRPCClient(config.Nodes.GRPC)
+	//	if err != nil {
+	//		log.Fatalf("Failed to create gRPC client: %v", err)
+	//	}
+
 	// Call the broadcast loop
 	successfulTxns, failedTxns, responseCodes, _ := broadcastLoop(txParams, BatchSize)
 
