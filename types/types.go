@@ -134,7 +134,7 @@ type Config struct {
 	MsgParams      MsgParams   `toml:"msg_params"`
 	Gas            GasConfig   `toml:"gas"`
 	Nodes          NodesConfig `toml:"nodes"`
-	API            string      `toml:"api"`
+	BroadcastMode  string      `toml:"broadcast_mode"`
 }
 
 type MsgParams struct {
@@ -160,8 +160,9 @@ type GasConfig struct {
 }
 
 type NodesConfig struct {
-	RPC []string `toml:"rpc"`
-	API string   `toml:"api"`
+	RPC  []string `toml:"rpc"`
+	API  string   `toml:"api"`
+	GRPC string   `toml:"grpc"`
 }
 
 type NodeInfo struct {
